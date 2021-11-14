@@ -229,25 +229,34 @@ def set_name():
     return player_name
 
 
-def convert_short_class(player_class):
+def convert_short_input(player_input, short_input, long_input):
     """
     Return the long form of the class given.
 
-    :param player_class: A string representing the player's class.
-    :precondition: player_class must be a string of a valid class ('fighter', 'warrior', 'cleric', 'wizard', 'thief',
-                   'robot') of short form (one letter) or long form (the full word).
-    :postcondition: Determines the long form of player_class.
-    :return: The long form of player_class.
-    >>> convert_short_class('f')
+    :param player_input: A string representing the player's class.
+    :param short_input: A string represting the list of one-character possible inputs.
+    :param long_input: A list of strings representing the list of one-word inputs.
+    :precondition: player_input must be a string of a valid input in short_input or long_input.
+    :precondition: short_input must be a string with one-character possible inputs.
+    :precondition: long_input must be a list of strings with each element being a possible input.
+    :postcondition: Determines the long form of player_input.
+    :return: The long form of player_input.
+    >>> short_class = 'fkcwtr'
+    >>> class_list = ['fighter', 'knight', 'cleric', 'wizard', 'thief', 'robot']
+    >>> convert_short_input('f', short_class, class_list)
     'fighter'
-    >>> convert_short_class('cleric')
+    >>> convert_short_input('cleric', short_class, class_list)
     'cleric'
+    >>> short_battle_input = 'asif'
+    >>> battle_input_list = ['attack', 'skill', 'item', 'flee']
+    >>> convert_short_input('s', short_battle_input, battle_input_list)
+    'skill'
+    >>> convert_short_input('flee', short_battle_input, battle_input_list)
+    'flee'
     """
-    if len(player_class) == 1:
-        short_class = 'fkcwtr'
-        class_list = ['fighter', 'knight', 'cleric', 'wizard', 'thief', 'robot']
-        return class_list[short_class.index(player_class)]
-    return player_class
+    if len(player_input) == 1:
+        return long_input[short_input.index(player_input)]
+    return player_input
 
 
 def print_class_descriptions(subclass):
@@ -293,7 +302,7 @@ def set_class(subclass):
             and player_class not in class_list:
         invalid_input(short_class)
         player_class = input("What is your selection? ").lower()
-    player_class = convert_short_class(player_class)
+    player_class = convert_short_input(player_class, short_class, class_list)
     return player_class.title()
 
 
@@ -423,9 +432,11 @@ def print_room(row, column, character):
     :precondition: character must be a dictionary with stats and coordinates.
     :return: A string representing the room at (row, column).
     """
-    global colors_dict
+    # global colors_dict
 
     if character['x'] == column and character['y'] == row:
+        if row == 0:
+            return f"{colors_dict['b_black']}{colors_dict['c_blue']}<P>{colors_dict['c_reset']}"
         return f"{colors_dict['c_blue']}<P>{colors_dict['c_reset']}"
     # Setting the borders
     elif (row, column) == (-1, -1):
@@ -547,6 +558,14 @@ def get_user_choice():
 
 
 def is_wall(row, column, character):
+    """
+    Return whether the player is moving into a wall.
+
+    :param row: A positive integer.
+    :param column: A positiver integer.
+    :param character:
+    :return:
+    """
     wall_strings = ["╔", "╗", "╚", "╝", "║", "╩", "═"]
     for wall_string in wall_strings:
         if wall_string in print_room(row, column, character):
@@ -559,21 +578,21 @@ def validate_move(board, character, direction):
     Return whether a player's directional input is possible.
 
     :param board: A dictionary of the game board.
-    :param character: A dictionary of the player.
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
     :param direction: A string which is the given direction.
     :precondition: board has keys which are tuples of row-column coordinates.
     :precondition: board has values which are coordinate statuses.
-    :precondition: character has keys/values with board coordinates and current HP.
+    :precondition: character must be a dictionary with stats and coordinates.
     :precondition: direction is a string and a valid directional input (i.e. in '1234nesw', 'north', 'east', 'south',
                    or 'west').
     :postcondition: Return whether direction on board is valid for character.
     :return: Whether direction on board is valid for character.
-    >>> game_board = make_board(4, 4)
+    >>> game_board = make_board(25, 25)
     >>> player = make_character()
-    >>> move_east = convert_direction_choice('e')
+    >>> move_east = 'e'
     >>> validate_move(game_board, player, move_east)
     True
-    >>> move_west = convert_direction_choice('w')
+    >>> move_west = 'w'
     >>> validate_move(game_board, player, move_west)
     False
     """
@@ -591,9 +610,9 @@ def move_character(character, direction):
     """
     Update the character's (x, y)-coordinates.
 
-    :param character: A dictionary of the player.
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
     :param direction: A string which is the given direction.
-    :precondition: character has keys/values with board coordinates and current HP.
+    :precondition: character must be a dictionary with stats and coordinates.
     :precondition: direction is a string and a valid directional input (i.e. in '1234nesw', 'north', 'east', 'south',
                    or 'west').
     :postcondition: Update character's (x, y)-coordinates via direction.
@@ -603,9 +622,242 @@ def move_character(character, direction):
     character['y'] += direction_tuple[1]
 
 
+def set_skill(skill_name, mp_use, atk_power, mag_power, multiplier, description, use_area, battle_text):
+    """
+    Return a dictionary for a skill.
+
+    :param skill_name: A string representing the skill's name.
+    :param mp_use: A positive integer representing the magic points used up when the skill is used.
+    :param atk_power: An integer representing the attack power of the skill.
+    :param mag_power: An integer representing the magic power of the skill.
+    :param multiplier: A number representing the damage multiplier of the skill.
+    :param description: A string representing what is shown when seeing the skill in the menu.
+    :param use_area: An integer representing where this skill can be used (1 for outside battle only, -1 for in battle
+                     only, 0 for both).
+    :param battle_text: A string that shows when using the skill in battle
+    :precondition: skill_name, description, and battle_text must be strings.
+    :precondition: atk_power and mag_power must be integers.
+    :precondition: mp_use must be a positive integer.
+    :precondition: multiplier must be a number (integer or float).
+    :precondition: use_area must be an integer in [-1, 0, 1].
+    :postcondition: Creates a dictionary for a skill.
+    :return: A dictionary containing parameters for a skill.
+    """
+    skill_dict = {
+        'skill_name': skill_name,
+        'mp_use': mp_use,
+        'atk_power': atk_power,
+        'mag_power': mag_power,
+        'multiplier': multiplier,
+        'description': description,
+        'use_area': use_area,
+        'battle_text': battle_text
+    }
+    return skill_dict
+
+
+def get_skill(character, skill):
+    """
+    Return a skill as a dictionary.
+
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :param skill: A string representing the skill's name.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :precondition: skill_name, description, and battle_text must be strings.
+    :postcondition: Create a dictionary for a skill.
+    :return: A dictionary for a skill.
+    """
+    use_area = {
+        'in_battle': 1,
+        'out_battle': -1,
+        'both': 0
+    }
+    # Fighter skills
+    if skill == 'Double Attack':
+        return set_skill(skill, 2, character['stat_atk'], 0, 2, 'Does twice the damage.', use_area['in_battle'],
+                         'attacks the enemy with a strong force!')
+    # Cleric skills
+    if skill == 'Heal':
+        return set_skill(skill, 2, 0, -20, 1, 'Heals the player.', use_area['both'], 'casts Heal!')
+    # Wizard skills
+    elif skill == 'Fire':
+        return set_skill(skill, 2, 0, int(20 + character['stat_mag'] / 4), 1, 'Burns the foe with fire.',
+                         use_area['in_battle'], 'casts Fire!')
+
+
+def check_for_foes():
+    """
+    Return whether a foe appears or not (20% chance it does).
+
+    :return: A boolean (True 20% of the time).
+    """
+    foe_exists = random.randint(0, 4)
+    return not foe_exists
+
+
+def set_enemy(enemy_name, enemy_hp, enemy_mp, enemy_atk, enemy_def, enemy_mag, enemy_mdf, enemy_spd, enemy_luk,
+              enemy_skills, enemy_exp, enemy_money):
+    """
+    Return a dictionary for an enemy.
+
+    :param enemy_name: A string representing the enemy's name.
+    :param enemy_hp: A positive integer representing the enemy's health points.
+    :param enemy_mp: A positive integer representing the enemy's magic points.
+    :param enemy_atk: A positive integer representing the enemy's attack.
+    :param enemy_def: A positive integer representing the enemy's defense.
+    :param enemy_mag: A positive integer representing the enemy's magic attack.
+    :param enemy_mdf: A positive integer representing the enemy's magic defense.
+    :param enemy_spd: A positive integer representing the enemy's speed.
+    :param enemy_luk: A positive integer representing the enemy's luck.
+    :param enemy_skills: A list of skills the enemy can use (either than a regular attack).
+    :param enemy_exp: A positive integer representing the experience points the enemy gives out.
+    :param enemy_money: A positive integer representing the money the enemy gives out.
+    :precondition: enemy_name must be a string.
+    :precondition: enemy_skills must be a list with each element a valid skill dictionary.
+    :precondition: Every parameter sans enemy_name and enemy_skills must be a positive integer (I do not plan on typing
+                   them all out).
+    :postcondition: Creates a dictionary for an enemy.
+    :return: A dictionary for an enemy.
+    """
+    enemy_dict = {
+        'name': enemy_name,
+        'stat_hp': enemy_hp,
+        'stat_curr_hp': enemy_hp,
+        'stat_mp': enemy_mp,
+        'stat_curr_mp': enemy_mp,
+        'stat_atk': enemy_atk,
+        'stat_def': enemy_def,
+        'stat_mag': enemy_mag,
+        'stat_mdf': enemy_mdf,
+        'stat_spd': enemy_spd,
+        'stat_luk': enemy_luk,
+        'skills': enemy_skills,
+        'exp': enemy_exp,
+        'money': enemy_money
+    }
+    return enemy_dict
+
+
+def get_enemy(enemy):
+    """
+    Return an enemy as a dictionary.
+
+    :param enemy: A string representing the enemy's name.
+    :precondition: enemy must be a string containing a valid in-game enemy.
+    :postcondition: Creates a dictionary for the enemy with stats.
+    :return: A dictionary with for the enemy with stats.
+    """
+    if enemy == 'Dream Cell':
+        return set_enemy(enemy, 10, 2, 2, 2, 2, 2, 2, 2, ['Bounce', 'Wait'], 5, 2)
+    elif enemy == 'Spider':
+        return set_enemy(enemy, 15, 5, 5, 1, 3, 1, 4, 5, ['Bite', 'Crawl'], 8, 6)
+    elif enemy == 'Sleep Paralysis Demon':
+        return set_enemy(enemy, 1000, 1000, 200, 100, 200, 100, 350, 500, ['Dark Shock'], 10000, 10000)
+
+
+def generate_enemy(row, column):
+    """
+    Return the enemy to fight against the player.
+
+    :param row: An integer representing the row value on the game board.
+    :param column: An integer representing the column value on the game board.
+    :precondition: row and column must be integers that are valid row and column values in the game board.
+    :return:
+    """
+    # TODO: Work on this function!
+    return get_enemy('Dream Cell')
+
+
+def attack(attacker, defender):
+    """
+    Return attack damage in battle.
+
+    :param attacker: A dictionary representing either the character or the enemy.
+    :param defender: A dictionary representing either the character or the enemy.
+    :precondition: attacker must be a dictionary with stats (and (x, y)-coordinates if the character).
+    :precondition: defender must be a dictionary with stats (and (x, y)-coordinates if the character).
+    :precondition: One of attacker/defender must be the character dictionary, with the other being the enemy dictionary.
+    :postcondition: Calculate the damage to deal in battle as an integer.
+    :return: An integer, the damage the defender will receive.
+    """
+    multiplier = 2
+    if 'class' in attacker.keys() and attacker['class'] == 'fighter':
+        multiplier = 2.5
+    base = 0.8
+    slope = 0.4
+    random_number = slope * random.random() + base  # Generate a random number in between base and base + slope
+    critical_chance = random.randint(0, max(0, int(20 - attacker['stat_luk'] / 50)))
+    attack_damage = (attacker['stat_atk'] * multiplier - defender['stat_def']) * random_number
+    print(f"{attacker['name']} attacks!")
+    if not critical_chance:
+        critical_base = 1.5
+        critical_slope = 0.5
+        critical_variance = critical_slope * random.random() + critical_base
+        attack_damage *= critical_variance
+        print(f"{colors_dict['c_yellow']}A critical hit!{colors_dict['c_reset']}")
+    attack_damage = max(0, int(attack_damage))
+    defender['stat_hp'] -= attack_damage
+    defender['stat_hp'] = max(0, defender['stat_hp'])
+    print(f"{attacker['name']} deals {attack_damage} points of damage!")
+
+
+def battle(character, enemy):
+    """
+    Run through the battle's logic, and end it when either the character or the enemy dies.
+
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :param enemy: A dictionary representing the enemy's stats.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :precondition: enemy must be a dictionary with stats.
+    :postcondition: Run through the battle and end it when either character['stat_hp'] or enemy['stat_hp'] is 0.
+    """
+    print(f"\nA {enemy['name']} wants to fight!")
+    while True:
+        print(f"1. ({colors_dict['c_blue']}A{colors_dict['c_reset']})ttack")
+        print(f"2. ({colors_dict['c_blue']}S{colors_dict['c_reset']})kill")
+        print(f"3. ({colors_dict['c_blue']}I{colors_dict['c_reset']})tem")
+        print(f"4. ({colors_dict['c_blue']}F{colors_dict['c_reset']})lee")
+        # Give player options for turn (attack, skill, run)
+        battle_input = input("What will you do this turn? ").lower()
+        short_battle_input = 'asif'
+        battle_input_list = ['attack', 'skill', 'item', 'flee']
+        while (battle_input not in short_battle_input or (battle_input in short_battle_input and
+                                                          len(battle_input) != 1))\
+                and battle_input not in battle_input_list:
+            invalid_input(short_battle_input)
+            battle_input = input("What will you do this turn? ").lower()
+        battle_input = convert_short_input(battle_input, short_battle_input, battle_input_list).title()
+        if battle_input == 'Flee':
+            print(f"{character['name']} escapes!")
+            return None
+        # Determine turn order
+        player_attacking = character['stat_spd'] > enemy['stat_spd']
+        if character['stat_spd'] == enemy['stat_spd']:
+            player_attacking = not random.randint(0, 1)
+        actions_left = 2
+        while actions_left:
+            if player_attacking:
+                if battle_input == 'Attack':
+                    attack(character, enemy)
+                elif battle_input == 'Skill':
+                    print(f"Still in testing!")
+                elif battle_input == 'Item':
+                    print(f"Still in testing!")
+                if enemy['stat_hp'] == 0:
+                    print(f"You won!")
+                    return None
+            else:
+                attack(enemy, character)
+                if character['stat_hp'] == 0:
+                    print(f"You died!")
+                    return None
+            player_attacking = not player_attacking
+            actions_left -= 1
+
+
 def game():
     """
-    Runs through the game's logic.
+    Run through the game's logic.
     """
     # ~~~ Set variables ~~~
     rows = 25
@@ -625,14 +877,21 @@ def game():
     set_class_bonus(character, 'subclass')
     print_character_stats(character)
     valid_move = False  # Added here so I don't output the map twice.
-    while True:
+    square_size = 7
+    while character['stat_hp'] > 0:
+        print()
         if not valid_move:  # Added here so I don't output the map twice.
-            print_board(board, character, 7)
+            print_board(board, character, square_size)
         direction = get_user_choice()
         valid_move = validate_move(board, character, direction)
         if valid_move:
             move_character(character, direction)
-            print_board(board, character, 7)
+            print_board(board, character, square_size)
+            there_is_a_challenger = check_for_foes()
+            if there_is_a_challenger:
+                enemy = generate_enemy(character['x'], character['y'])
+                battle(character, enemy)
+                print_character_stats(character)
         else:
             print("Can't move here.")
 
