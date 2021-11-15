@@ -4,6 +4,7 @@ Your student number: A01253802
 
 All of your code must go in this file.
 """
+import math
 import random
 import time
 
@@ -78,6 +79,27 @@ colors_dict = {
     'c_white': '\033[97m'
 }
 
+"""
+def get_color(color):
+    Return a string to change the color on the screen.
+
+    :param color: A string representing the color.
+    :return:
+    colors_dict = {
+        'b_black': '\033[40m',
+        'c_reset': '\033[0m',
+        'c_black': '\033[30m',
+        'c_red': '\033[91m',
+        'c_green': '\033[92m',
+        'c_yellow': '\033[93m',
+        'c_blue': '\033[94m',
+        'c_magenta': '\033[95m',
+        'c_cyan': '\033[96m',
+        'c_white': '\033[97m'
+    }
+    return colors_dict[color]
+"""
+
 
 # ~~~ FUNCTIONS ~~~
 def get_room_status(row, column):
@@ -126,9 +148,9 @@ def make_character():
         'subclass': '',
         'level': 1,
         'stat_hp': 5,
-        'stat_curr_hp': 5,
+        'stat_max_hp': 5,
         'stat_mp': 5,
-        'stat_curr_mp': 5,
+        'stat_max_mp': 5,
         'stat_atk': 2,
         'stat_def': 2,
         'stat_mag': 2,
@@ -193,12 +215,12 @@ def invalid_input(wanted_input):
     :postcondition: Print a string with the wanted input in parentheses divided by forward slashes.
     >>> invalid_input("")
     Invalid input. Please enter one of ().
-    >>> invalid_input("yn")
+    >>> invalid_input("  yn")
     Invalid input. Please enter one of (y/n).
-    >>> invalid_input("1234")
+    >>> invalid_input("    1234")
     Invalid input. Please enter one of (1/2/3/4).
     """
-    print(f"Invalid input. Please enter one of ({'/'.join(wanted_input)}).")
+    print(f"Invalid input. Please enter one of ({'/'.join(wanted_input[len(wanted_input) // 2:])}).")
 
 
 def set_name():
@@ -209,7 +231,7 @@ def set_name():
     """
     player_name = input("Please enter a name for your character: ")
     while player_name == '' or player_name in ' ' * len(player_name):  # No blank names
-        print("A blank name is not accepted.")
+        print(f"A blank name is not accepted.")
         player_name = input("Please enter a name for your character: ")
     # TODO: Use below for one confirmation after setting name/class
     """
@@ -223,7 +245,7 @@ def set_name():
         elif confirm_name in 'no':
             player_name = input("Please enter a name for your character: ")
             while player_name == '' or player_name in ' ' * len(player_name):  # No blank names
-                print("A blank name is not accepted.")
+                print(f"A blank name is not accepted.")
                 player_name = input("Please enter a name for your character: ")
     """
     return player_name
@@ -237,51 +259,55 @@ def convert_short_input(player_input, short_input, long_input):
     :param short_input: A string represting the list of one-character possible inputs.
     :param long_input: A list of strings representing the list of one-word inputs.
     :precondition: player_input must be a string of a valid input in short_input or long_input.
-    :precondition: short_input must be a string with one-character possible inputs.
+    :precondition: short_input must be a string with one-character possible inputs in 'number-then-letter' order.
     :precondition: long_input must be a list of strings with each element being a possible input.
     :postcondition: Determines the long form of player_input.
     :return: The long form of player_input.
-    >>> short_class = 'fkcwtr'
+    >>> short_class = '123456fkcwtr'
     >>> class_list = ['fighter', 'knight', 'cleric', 'wizard', 'thief', 'robot']
     >>> convert_short_input('f', short_class, class_list)
     'fighter'
+    >>> convert_short_input('2', short_class, class_list)
+    'knight'
     >>> convert_short_input('cleric', short_class, class_list)
     'cleric'
-    >>> short_battle_input = 'asif'
+    >>> short_battle_input = '1234asif'
     >>> battle_input_list = ['attack', 'skill', 'item', 'flee']
     >>> convert_short_input('s', short_battle_input, battle_input_list)
     'skill'
     >>> convert_short_input('flee', short_battle_input, battle_input_list)
     'flee'
     """
-    if len(player_input) == 1:
-        return long_input[short_input.index(player_input)]
+    if len(player_input) == 1 and ord('1') <= ord(player_input) <= ord('9'):
+        return long_input[int(player_input) - 1]
+    elif len(player_input) == 1:
+        return long_input[short_input.index(player_input) - len(long_input)]
     return player_input
 
 
 def print_class_descriptions(subclass):
-    fighter_text = f"{colors_dict['c_blue']}F{colors_dict['c_reset']}ighter"
-    knight_text = f"{colors_dict['c_blue']}K{colors_dict['c_reset']}night"
-    cleric_text = f"{colors_dict['c_blue']}C{colors_dict['c_reset']}leric"
-    wizard_text = f"{colors_dict['c_blue']}W{colors_dict['c_reset']}izard"
-    thief_text = f"{colors_dict['c_blue']}T{colors_dict['c_reset']}hief"
-    robot_text = f"{colors_dict['c_blue']}R{colors_dict['c_reset']}obot"
+    fighter_text = f"1. ({colors_dict['c_blue']}F{colors_dict['c_reset']})ighter"
+    knight_text = f"2. ({colors_dict['c_blue']}K{colors_dict['c_reset']})night"
+    cleric_text = f"3. ({colors_dict['c_blue']}C{colors_dict['c_reset']})leric"
+    wizard_text = f"4. ({colors_dict['c_blue']}W{colors_dict['c_reset']})izard"
+    thief_text = f"5. ({colors_dict['c_blue']}T{colors_dict['c_reset']})hief"
+    robot_text = f"6. ({colors_dict['c_blue']}R{colors_dict['c_reset']})obot"
     if subclass:
-        print("\nTime to choose the subclass you want to be.")
-        print(f"{fighter_text}: +1 HP,  +2 ATK, +1 AGI, +1 LUK")
-        print(f"{knight_text}:  +2 HP,  +1 ATK, +2 DEF")
-        print(f"{cleric_text}:  +1 HP,  +1 MP,  +1 MAG, +2 MDF")
-        print(f"{wizard_text}:  +2 MP,  +2 MAG, +1 MDF")
-        print(f"{thief_text}:   +1 ATK, +1 MDF, +2 AGI, +2 LUK")
-        print(f"{robot_text}:   +2 HP,  +2 DEF, +1 MDF")
+        print(f"\nTime to choose the subclass you want to be.\n"
+              f"{fighter_text}: +1 HP,  +2 ATK, +1 AGI, +1 LUK\n"
+              f"{knight_text}:  +2 HP,  +1 ATK, +2 DEF\n"
+              f"{cleric_text}:  +1 HP,  +1 MP,  +1 MAG, +2 MDF\n"
+              f"{wizard_text}:  +2 MP,  +2 MAG, +1 MDF\n"
+              f"{thief_text}:   +1 ATK, +1 MDF, +2 AGI, +2 LUK\n"
+              f"{robot_text}:   +2 HP,  +2 DEF, +1 MDF")
     else:
-        print("\nTime to choose the class you want to be.")
-        print(f"{fighter_text}: +2 HP,  +3 ATK, +2 AGI, +1 LUK")
-        print(f"{knight_text}:  +3 HP,  +2 ATK, +3 DEF")
-        print(f"{cleric_text}:  +1 HP,  +2 MP,  +2 MAG, +3 MDF")
-        print(f"{wizard_text}:  +3 MP,  +3 MAG, +2 MDF")
-        print(f"{thief_text}:   +1 ATK, +1 MDF, +3 AGI, +3 LUK")
-        print(f"{robot_text}:   +3 HP,  +3 DEF, +2 MDF")
+        print(f"\nTime to choose the class you want to be.\n"
+              f"{fighter_text}: +2 HP,  +3 ATK, +2 AGI, +1 LUK\n"
+              f"{knight_text}:  +3 HP,  +2 ATK, +3 DEF\n"
+              f"{cleric_text}:  +1 HP,  +2 MP,  +2 MAG, +3 MDF\n"
+              f"{wizard_text}:  +3 MP,  +3 MAG, +2 MDF\n"
+              f"{thief_text}:   +1 ATK, +1 MDF, +3 AGI, +3 LUK\n"
+              f"{robot_text}:   +3 HP,  +3 DEF, +2 MDF")
 
 
 def set_class(subclass):
@@ -296,7 +322,7 @@ def set_class(subclass):
     """
     print_class_descriptions(subclass)
     player_class = input("What is your selection? ").lower()
-    short_class = 'fkcwtr'
+    short_class = '123456fkcwtr'
     class_list = ['fighter', 'knight', 'cleric', 'wizard', 'thief', 'robot']
     while (player_class not in short_class or (player_class in short_class and len(player_class) != 1))\
             and player_class not in class_list:
@@ -318,39 +344,47 @@ def set_class_bonus(character, class_selection):
     divider = 1
     if class_selection == 'subclass':
         divider = 2
-    if character[class_selection] == 'Fighter':
-        character['stat_hp'] += 2 // divider
-        character['stat_curr_hp'] += 2 // divider
-        character['stat_atk'] += 3 // divider
-        character['stat_spd'] += 2 // divider
-        character['stat_luk'] += 1
-    elif character[class_selection] == 'Knight':
-        character['stat_hp'] += 3 // divider
-        character['stat_curr_hp'] += 3 // divider
-        character['stat_atk'] += 2 // divider
-        character['stat_def'] += 3 // divider
-    elif character[class_selection] == 'Cleric':
-        character['stat_hp'] += 1
-        character['stat_curr_hp'] += 1
-        character['stat_mp'] += 2 // divider
-        character['stat_curr_mp'] += 2 // divider
-        character['stat_mag'] += 2 // divider
-        character['stat_mdf'] += 3 // divider
-    elif character[class_selection] == 'Wizard':
-        character['stat_mp'] += 3 // divider
-        character['stat_curr_mp'] += 3 // divider
-        character['stat_mag'] += 3 // divider
-        character['stat_mdf'] += 2 // divider
-    elif character[class_selection] == 'Thief':
-        character['stat_atk'] += 1
-        character['stat_mdf'] += 1
-        character['stat_spd'] += 3 // divider
-        character['stat_luk'] += 3 // divider
-    elif character[class_selection] == 'Robot':
-        character['stat_hp'] += 3 // divider
-        character['stat_curr_hp'] += 3 // divider
-        character['stat_def'] += 3 // divider
-        character['stat_mdf'] += 2 // divider
+    class_bonuses = {
+        'Fighter': {
+            'hp': 2,
+            'atk': 3,
+            'spd': 2,
+            'luk': 1
+        },
+        'Knight': {
+            'hp': 3,
+            'atk': 2,
+            'def': 3
+        },
+        'Cleric': {
+            'hp': 1,
+            'mp': 2,
+            'mag': 2,
+            'mdf': 3
+        },
+        'Wizard': {
+            'mp': 3,
+            'mag': 3,
+            'mdf': 2
+        },
+        'Thief': {
+            'atk': 1,
+            'mdf': 1,
+            'spd': 3,
+            'luk': 3
+        },
+        'Robot': {
+            'hp': 3,
+            'def': 3,
+            'mdf': 2
+        }
+    }
+    class_dict = class_bonuses[character[class_selection]]
+    for stat_bonus in class_dict:
+        print(stat_bonus)
+        character['stat_' + stat_bonus] += math.ceil(class_dict[stat_bonus] / divider)
+        if stat_bonus in 'hpmp':
+            character['stat_max_' + stat_bonus] += math.ceil(class_dict[stat_bonus] / divider)
 
 
 def print_character_stats(character):
@@ -364,20 +398,102 @@ def print_character_stats(character):
     stat_length = 14  # Stats are printed as two on each line, 19 characters total
     longest_string = max(len(character['name']), stat_length) + 9
     border = "#" + "=" * longest_string + "#"
-    print(f"\n{border}")
-    print(f"Name:     {character['name']}")
-    print(f"Class:    {character['class']}")
-    print(f"Subclass: {character['subclass']}")
     middle_border = "-" * (longest_string + 2)
-    print(middle_border)
-    print(f"Level: {character['level']:18d}")
-    print(f"Money: {character['money']:18d}")
-    print(f"HP:  {character['stat_curr_hp']:2d}/{character['stat_hp']:3d} "
-          f"| MP:  {character['stat_curr_mp']:2d}/{character['stat_mp']:3d}")
-    print(f"ATK: {character['stat_atk']:6d} | DEF: {character['stat_def']:6d}")
-    print(f"MAG: {character['stat_mag']:6d} | MDF: {character['stat_mdf']:6d}")
-    print(f"SPD: {character['stat_spd']:6d} | LUK: {character['stat_luk']:6d}")
-    print(border)
+    print(f"\n{border}\n"
+          f"Name:     {character['name']}\n"
+          f"Class:    {character['class']}\n"
+          f"Subclass: {character['subclass']}\n"
+          f"{middle_border}\n"
+          f"Level: {character['level']:18d}\n"
+          f"Exp:   {character['exp']:18d}\n"
+          f"Money: {character['money']:18d}\n"
+          f"{middle_border}\n"
+          f"HP:  {character['stat_hp']:2d}/{character['stat_max_hp']:3d} "
+          f"| MP:  {character['stat_mp']:2d}/{character['stat_max_mp']:3d}\n"
+          f"ATK: {character['stat_atk']:6d} | DEF: {character['stat_def']:6d}\n"
+          f"MAG: {character['stat_mag']:6d} | MDF: {character['stat_mdf']:6d}\n"
+          f"SPD: {character['stat_spd']:6d} | LUK: {character['stat_luk']:6d}\n"
+          f"{border}")
+
+
+def print_corner(row, column):
+    """
+    Print a corner of the board if applicable to row and column.
+
+    :param row: An integer representing the row value on the game board.
+    :param column: An integer representing the column value on the game board.
+    :precondition: row and column must be integers that are valid row and column values in the game board.
+    :postcondition: Determine the character for the room's corner. Return None if row and column aren't a corner.
+    :return: A character representing a corner in the board, or None if it doesn't exist.
+    """
+    if (row, column) == (-1, -1):
+        return "╔"
+    elif (row, column) == (-1, 25):
+        return "╗"
+    elif (row, column) == (25, -1):
+        return "╚"
+    elif (row, column) == (25, 25):
+        return "╝"
+    return None
+
+
+def print_walls(row, column):
+    """
+    Print an inside walls of the board if applicable to row and column.
+
+    :param row: An integer representing the row value on the game board.
+    :param column: An integer representing the column value on the game board.
+    :precondition: row and column must be integers that are valid row and column values in the game board.
+    :postcondition: Determine the string for the room's inside walls. Return None if row and column aren't an inside
+                    wall.
+    :return: A string representing a wall in the board, or None if it doesn't exist.
+    """
+    if (row not in [1, 10, 20] and column in [-1, 25]) or (row, column) == (1, 25) or (row, column) == (10, -1)\
+            or (row, column) == (20, 25):
+        return "║"
+    elif row in [1, 20] and column == -1:
+        return "╠"
+    elif (row, column) == (20, 7):
+        return "═╩═"
+    elif (row, column) == (10, 25):
+        return "╣"
+    elif ((row == 1 or row == 20) and column < 24) or (row == 3 and 12 <= column <= 23)\
+            or (row == 10 and (1 <= column <= 6 or 12 <= column <= 24)) or row in [-1, 25]:
+        return "═══"
+    elif (4 <= row <= 9 and column == 11) or (11 <= row <= 19 and column == 7):
+        return " ║ "
+    elif (row, column) == (3, 11):
+        return " ╔═"
+    elif (row, column) == (10, 7):
+        return "═╗ "
+    elif (row, column) == (10, 11):
+        return " ╚═"
+    return None
+
+
+def print_color(row, column):
+    """
+    Print a colored, movable area if applicable to row and column.
+
+    :param row: An integer representing the row value on the game board.
+    :param column: An integer representing the column value on the game board.
+    :precondition: row and column must be integers that are valid row and column values in the game board.
+    :postcondition: Determine the string for the room's area. Return None if row and column aren't a movable area.
+    :return: A string representing an area in the board, or None if it doesn't exist.
+    """
+    if 21 <= row <= 24 and column < 4:
+        return f"{colors_dict['c_white']}¤¤¤{colors_dict['c_reset']}"
+    elif (21 <= row <= 24 and 4 <= column <= 24) or (row, column) == (20, 24):
+        return f"{colors_dict['c_magenta']}≡≡≡{colors_dict['c_reset']}"
+    elif 10 <= row <= 19 and column <= 7:
+        return f"{colors_dict['c_yellow']}◊ð≈{colors_dict['c_reset']}"
+    elif 3 <= row <= 9 and 12 <= column <= 24:
+        return f"{colors_dict['c_cyan']}△Λ▴{colors_dict['c_reset']}"
+    elif (row, column) == (1, 24) or 2 <= row <= 19:
+        return f"{colors_dict['c_green']}Îî↑{colors_dict['c_reset']}"
+    elif row == 0:
+        return f"{colors_dict['b_black']}{colors_dict['c_red']}Ξ♰Ψ{colors_dict['c_reset']}"
+    return None
 
 
 def print_room(row, column, character):
@@ -432,54 +548,19 @@ def print_room(row, column, character):
     :precondition: character must be a dictionary with stats and coordinates.
     :return: A string representing the room at (row, column).
     """
-    # global colors_dict
-
     if character['x'] == column and character['y'] == row:
         if row == 0:
             return f"{colors_dict['b_black']}{colors_dict['c_blue']}<P>{colors_dict['c_reset']}"
         return f"{colors_dict['c_blue']}<P>{colors_dict['c_reset']}"
-    # Setting the borders
-    elif (row, column) == (-1, -1):
-        return "╔"
-    elif (row, column) == (-1, 25):
-        return "╗"
-    elif (row, column) == (25, -1):
-        return "╚"
-    elif (row, column) == (25, 25):
-        return "╝"
-    elif (row not in [1, 10, 20] and column in [-1, 25]) or (row, column) == (1, 25) or (row, column) == (10, -1)\
-            or (row, column) == (20, 25):
-        return "║"
-    elif row in [1, 20] and column == -1:
-        return "╠"
-    elif (row, column) == (20, 7):
-        return "═╩═"
-    elif (row, column) == (10, 25):
-        return "╣"
-    elif ((row == 1 or row == 20) and column < 24) or (row == 3 and 12 <= column <= 23)\
-            or (row == 10 and (1 <= column <= 6 or 12 <= column <= 24)) or row in [-1, 25]:
-        return "═══"
-    elif (4 <= row <= 9 and column == 11) or (11 <= row <= 19 and column == 7):
-        return " ║ "
-    elif (row, column) == (3, 11):
-        return " ╔═"
-    elif (row, column) == (10, 7):
-        return "═╗ "
-    elif (row, column) == (10, 11):
-        return " ╚═"
-    # Setting the colors
-    elif 21 <= row <= 24 and column < 4:
-        return f"{colors_dict['c_white']}¤¤¤{colors_dict['c_reset']}"
-    elif (21 <= row <= 24 and 4 <= column <= 24) or (row, column) == (20, 24):
-        return f"{colors_dict['c_magenta']}≡≡≡{colors_dict['c_reset']}"
-    elif 10 <= row <= 19 and column <= 7:
-        return f"{colors_dict['c_yellow']}◊ð≈{colors_dict['c_reset']}"
-    elif 3 <= row <= 9 and 12 <= column <= 24:
-        return f"{colors_dict['c_cyan']}△Λ▴{colors_dict['c_reset']}"
-    elif (row, column) == (1, 24) or 2 <= row <= 19:
-        return f"{colors_dict['c_green']}Îî↑{colors_dict['c_reset']}"
-    elif row == 0:
-        return f"{colors_dict['b_black']}{colors_dict['c_red']}Ξ♰Ψ{colors_dict['c_reset']}"
+    corner = print_corner(row, column)
+    if corner is not None:
+        return corner
+    wall = print_walls(row, column)
+    if wall is not None:
+        return wall
+    color = print_color(row, column)
+    if color is not None:
+        return color
     return "   "
 
 
@@ -503,11 +584,12 @@ def print_board(board, character, square_size):
     x_right = min(columns, character['x'] + square_radius)
     y_top = max(-1, character['y'] - square_radius)
     y_bottom = min(rows, character['y'] + square_radius)
+    print(f"")
     for row in range(y_top, y_bottom + 1):
         printed_row = ""
         for column in range(x_left, x_right + 1):
             printed_row += print_room(row, column, character)
-        print(printed_row)
+        print(f"{printed_row}")
 
 
 def convert_direction_choice(dir_input):
@@ -546,13 +628,13 @@ def get_user_choice():
 
     :return: Tuple (x, y)-coordinates depending on user's input.
     """
-    print("1. (N)orth\n2. (E)ast\n3. (S)outh\n4. (W)est")
+    print(f"1. (N)orth\n2. (E)ast\n3. (S)outh\n4. (W)est")
     dir_input = input("Which direction do you want to go? ").lower()
     short_list = '1234nesw'
     coordinate_list = ['north', 'east', 'south', 'west']
     while (dir_input not in short_list or (dir_input in short_list and len(dir_input) != 1))\
             and dir_input not in coordinate_list:
-        print("Invalid input.")
+        print(f"Invalid input.")
         dir_input = input("Which direction do you want to go? ").lower()
     return dir_input
 
@@ -563,7 +645,7 @@ def is_wall(row, column, character):
 
     :param row: A positive integer.
     :param column: A positiver integer.
-    :param character:
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
     :return:
     """
     wall_strings = ["╔", "╗", "╚", "╝", "║", "╩", "═"]
@@ -672,17 +754,28 @@ def get_skill(character, skill):
         'out_battle': -1,
         'both': 0
     }
-    # Fighter skills
-    if skill == 'Double Attack':
-        return set_skill(skill, 2, character['stat_atk'], 0, 2, 'Does twice the damage.', use_area['in_battle'],
-                         'attacks the enemy with a strong force!')
-    # Cleric skills
-    if skill == 'Heal':
-        return set_skill(skill, 2, 0, -20, 1, 'Heals the player.', use_area['both'], 'casts Heal!')
-    # Wizard skills
-    elif skill == 'Fire':
-        return set_skill(skill, 2, 0, int(20 + character['stat_mag'] / 4), 1, 'Burns the foe with fire.',
-                         use_area['in_battle'], 'casts Fire!')
+    enemy_use = use_area['in_battle']
+    skills_dict = {
+        # Player Skills
+        'Double Attack': set_skill(skill, 2, character['stat_atk'], 0, 2, 'Does twice the damage.',
+                                   use_area['in_battle'], 'attacks the enemy with a strong force!'),
+        'Heal': set_skill(skill, 2, 0, -20, 1, 'Heals the player.', use_area['both'], 'casts Heal!'),
+        'Fire': set_skill(skill, 2, 0, int(20 + character['stat_mag'] / 4), 1, 'Burns the foe with fire.',
+                          use_area['in_battle'], 'casts Fire!'),
+        # Enemy Skills
+        'Bounce': set_skill(skill, 0, character['stat_atk'], 0, 2.5, 'Bounce on the enemy.', enemy_use,
+                            'bounces high and falls down!'),
+        'Wait': set_skill(skill, 0, 0, 0, 0, 'Waits.', enemy_use, 'does nothing!'),
+        'Bite': set_skill(skill, 1, character['stat_atk'], 0, 2.5, 'Bite the enemy.', enemy_use,
+                          'takes a nice bite of your flesh!'),
+        'Crawl': set_skill(skill, 2, character['stat_atk'] + character['stat_spd'], 0, 2, 'Crawl on the enemy',
+                           enemy_use, 'crawls around on your body, giving you the shivers!'),
+        'Funky Music': set_skill(skill, 0, 0, character['stat_mag'], character['stat_luk'], 'Play some funky music on'
+                                                                                            'the organ.', enemy_use,
+                                 'SETS THE BATTLEFIELD ON FIRE WITH HIS EPIC ORGAN CHORDS!'),
+        'Wind': set_skill(skill, 4, 0, character['stat_mag'], 2, 'Deal wind damage.', enemy_use, 'casts Wind!')
+    }
+    return skills_dict[skill]
 
 
 def check_for_foes():
@@ -722,9 +815,9 @@ def set_enemy(enemy_name, enemy_hp, enemy_mp, enemy_atk, enemy_def, enemy_mag, e
     enemy_dict = {
         'name': enemy_name,
         'stat_hp': enemy_hp,
-        'stat_curr_hp': enemy_hp,
+        'stat_max_hp': enemy_hp,
         'stat_mp': enemy_mp,
-        'stat_curr_mp': enemy_mp,
+        'stat_max_mp': enemy_mp,
         'stat_atk': enemy_atk,
         'stat_def': enemy_def,
         'stat_mag': enemy_mag,
@@ -747,12 +840,46 @@ def get_enemy(enemy):
     :postcondition: Creates a dictionary for the enemy with stats.
     :return: A dictionary with for the enemy with stats.
     """
-    if enemy == 'Dream Cell':
-        return set_enemy(enemy, 10, 2, 2, 2, 2, 2, 2, 2, ['Bounce', 'Wait'], 5, 2)
-    elif enemy == 'Spider':
-        return set_enemy(enemy, 15, 5, 5, 1, 3, 1, 4, 5, ['Bite', 'Crawl'], 8, 6)
-    elif enemy == 'Sleep Paralysis Demon':
-        return set_enemy(enemy, 1000, 1000, 200, 100, 200, 100, 350, 500, ['Dark Shock'], 10000, 10000)
+    enemy_dicts = {
+        'Dream Cell': set_enemy(enemy, 10, 2, 2, 2, 2, 2, 2, 2, ['Bounce', 'Wait'], 5, 2),
+        'Spider': set_enemy(enemy, 15, 3, 3, 1, 2, 1, 4, 5, ['Bite', 'Crawl'], 8, 6),
+        'Organ Man': set_enemy(enemy, 30, 20, 4, 4, 4, 4, 4, 4, ['Funky Music'], 20, 12),
+        'First Boss': set_enemy(enemy, 40, 10, 6, 4, 6, 4, 10, 20, ['Wind'], 50, 40),
+        'Sleep Paralysis Demon': set_enemy(enemy, 1000, 1000, 200, 100, 200, 100, 350, 500, ['Dark Shock'], 10000,
+                                           10000)
+    }
+    return enemy_dicts[enemy]
+
+
+def generate_first_area_enemies(row, column):
+    """
+    Generate enemies from the first area of the game.
+
+    :param row: An integer representing the row value on the game board.
+    :param column: An integer representing the column value on the game board.
+    :precondition: row and column must be integers that are valid row and column values in the game board.
+    :postcondition: Generate an enemy dictionary given row and column.
+    :return: An enemy as a dictionary.
+    """
+    if 4 <= column <= 13:
+        return get_enemy('Dream Cell')
+    enemy_generated = random.randint(0, 19)
+    if enemy_generated < 10:
+        return get_enemy('Dream Cell')
+    return get_enemy('Spider')
+
+
+def generate_main_area_enemies(row, column):
+    """
+    Generate enemies from the main area of the game.
+
+    :param row: An integer representing the row value on the game board.
+    :param column: An integer representing the column value on the game board.
+    :precondition: row and column must be integers that are valid row and column values in the game board.
+    :postcondition: Generate an enemy dictionary given row and column.
+    :return: An enemy as a dictionary.
+    """
+    return get_enemy('Dream Cell')
 
 
 def generate_enemy(row, column):
@@ -762,10 +889,22 @@ def generate_enemy(row, column):
     :param row: An integer representing the row value on the game board.
     :param column: An integer representing the column value on the game board.
     :precondition: row and column must be integers that are valid row and column values in the game board.
-    :return:
+    :postcondition: Generate an enemy dictionary given row and column.
+    :return: An enemy as a dictionary.
     """
     # TODO: Work on this function!
-    return get_enemy('Dream Cell')
+    if 21 <= row <= 24 and column < 4:  # First area of the game, shouldn't generate any enemies (white)
+        return None
+    elif (21 <= row <= 24 and 4 <= column <= 24) or (row, column) == (20, 24):  # First area (magenta)
+        return generate_first_area_enemies(row, column)
+    elif 10 <= row <= 19 and column <= 7:  # Second area (yellow)
+        return generate_main_area_enemies(row, column)
+    elif 3 <= row <= 9 and 12 <= column <= 24:  # Third area (cyan)
+        return generate_main_area_enemies(row, column)
+    elif (row, column) == (1, 24) or 2 <= row <= 19:  # Main area (green)
+        return generate_main_area_enemies(row, column)
+    elif row == 0:  # Final area (black/red)
+        return generate_main_area_enemies(row, column)
 
 
 def attack(attacker, defender):
@@ -801,6 +940,104 @@ def attack(attacker, defender):
     print(f"{attacker['name']} deals {attack_damage} points of damage!")
 
 
+def level_up(character):
+    """
+    Return whether a character can level up.
+
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :postcondition: Determine if character['exp'] is enough to increase character['level'] by 1 (True if so, otherwise
+                    False).
+    :return: A boolean, whether character can level up.
+    """
+    next_level = 30 * character['level']**2 - 12 * character['level'] + 6
+    next_level_exp_needed = max(0, next_level - character['exp'])
+    print(f"{next_level_exp_needed} experience points until {character['level'] + 1}!")
+    return character['exp'] >= next_level
+
+
+def class_stat_change(stat, character, class_type):
+    """
+    Return the amount of points being added depending on the character's class and subclass.
+
+    :param stat: A string representing a valid stat.
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :param class_type: A string representing either the character's class or subclass.
+    :precondition: stat must be a valid stat ('hp', 'mp', 'atk', 'def', 'mag', 'mdf', 'spd', 'luk').
+    :precondition: character must be a dictionary with stats and coordinates.
+    :precondition: class_type must be a string of either 'class' or 'subclass'.
+    :postcondition: Calculate an integer to add to stat for character depending on class_type.
+    :return: An integer which is added to stat for character depending on class_type.
+    """
+    if (stat == 'hp' and character[class_type] in ['Knight', 'Robot'])\
+            or (stat == 'mp' and character[class_type] in ['Cleric', 'Wizard'])\
+            or (stat == 'atk' and character[class_type] in ['Fighter', 'Knight'])\
+            or (stat == 'def' and character[class_type] in ['Knight', 'Robot'])\
+            or (stat == 'mag' and character[class_type] in ['Cleric', 'Wizard'])\
+            or (stat == 'mdf' and character[class_type] in ['Cleric', 'Wizard'])\
+            or (stat == 'spd' and character[class_type] in ['Fighter', 'Thief'])\
+            or (stat == 'luk' and character[class_type] in ['Fighter', 'Thief']):
+        if class_type == 'class':
+            return random.randint(4, 5)
+        return random.randint(2, 3)
+    return random.randint(0, 1)
+
+
+def stat_change(stat, character):
+    """
+    Return the amount of points to add to a character's stat.
+
+    :param stat: A string representing a valid stat.
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :precondition: stat must be a valid stat ('hp', 'mp', 'atk', 'def', 'mag', 'mdf', 'spd', 'luk').
+    :precondition: character must be a dictionary with stats and coordinates.
+    :postcondition: Calculate an integer to add to stat for character.
+    :return: A integer which is added to stat for character.
+    """
+    class_increase = class_stat_change(stat, character, 'class')
+    subclass_increase = class_stat_change(stat, character, 'subclass')
+    return class_increase + subclass_increase
+
+
+def bonus_stats(character):
+    """
+    Add stats to the character when leveling up.
+
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :return:
+    """
+    character['level'] += 1
+    print(f"\n{character['name']} has reached level {character['level']}!")
+    stats = ['hp', 'mp', 'atk', 'def', 'mag', 'mdf', 'spd', 'luk']
+    for stat in stats:
+        stat_increase = stat_change(stat, character)
+        print(f"{character['name']}'s {stat.upper()} increased by {stat_increase}!")
+        if stat in 'hpmp':  # Increase maximum HP along with current HP
+            character['stat_max_' + stat] += stat_increase
+        character['stat_' + stat] += stat_increase
+
+
+def post_battle(character, enemy):
+    """
+    Do post-battle events, like gaining experience and money, and also leveling up.
+
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :param enemy: A dictionary representing the enemy's stats.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :precondition: enemy must be a dictionary with stats.
+    :postcondition: Run through post-battle events.
+    """
+    character['exp'] += enemy['exp']
+    character['money'] += enemy['money']
+    print(f"{character['name']} gained {enemy['exp']} experience points!")
+    print(f"{character['name']} gained {enemy['money']} money!")
+    if level_up(character):
+        bonus_stats(character)
+        return True
+    return False
+
+
 def battle(character, enemy):
     """
     Run through the battle's logic, and end it when either the character or the enemy dies.
@@ -813,13 +1050,13 @@ def battle(character, enemy):
     """
     print(f"\nA {enemy['name']} wants to fight!")
     while True:
-        print(f"1. ({colors_dict['c_blue']}A{colors_dict['c_reset']})ttack")
-        print(f"2. ({colors_dict['c_blue']}S{colors_dict['c_reset']})kill")
-        print(f"3. ({colors_dict['c_blue']}I{colors_dict['c_reset']})tem")
-        print(f"4. ({colors_dict['c_blue']}F{colors_dict['c_reset']})lee")
+        print(f"1. ({colors_dict['c_blue']}A{colors_dict['c_reset']})ttack\n"
+              f"2. ({colors_dict['c_blue']}S{colors_dict['c_reset']})kill\n"
+              f"3. ({colors_dict['c_blue']}I{colors_dict['c_reset']})tem\n"
+              f"4. ({colors_dict['c_blue']}F{colors_dict['c_reset']})lee")
         # Give player options for turn (attack, skill, run)
         battle_input = input("What will you do this turn? ").lower()
-        short_battle_input = 'asif'
+        short_battle_input = '1234asif'
         battle_input_list = ['attack', 'skill', 'item', 'flee']
         while (battle_input not in short_battle_input or (battle_input in short_battle_input and
                                                           len(battle_input) != 1))\
@@ -845,6 +1082,7 @@ def battle(character, enemy):
                     print(f"Still in testing!")
                 if enemy['stat_hp'] == 0:
                     print(f"You won!")
+                    post_battle(character, enemy)
                     return None
             else:
                 attack(enemy, character)
@@ -872,14 +1110,13 @@ def game():
     selecting_subclass = True
     character['subclass'] = set_class(selecting_subclass)
     if character['subclass'] == character['class']:
-        print("\nThat's already your main class. Please choose again.")
+        print(f"\nThat's already your main class. Please choose again.")
         character['subclass'] = set_class(selecting_subclass)
     set_class_bonus(character, 'subclass')
     print_character_stats(character)
     valid_move = False  # Added here so I don't output the map twice.
-    square_size = 7
+    square_size = 51
     while character['stat_hp'] > 0:
-        print()
         if not valid_move:  # Added here so I don't output the map twice.
             print_board(board, character, square_size)
         direction = get_user_choice()
@@ -889,11 +1126,12 @@ def game():
             print_board(board, character, square_size)
             there_is_a_challenger = check_for_foes()
             if there_is_a_challenger:
-                enemy = generate_enemy(character['x'], character['y'])
-                battle(character, enemy)
-                print_character_stats(character)
+                enemy = generate_enemy(character['y'], character['x'])
+                if enemy is not None:
+                    battle(character, enemy)
+                    print_character_stats(character)
         else:
-            print("Can't move here.")
+            print(f"Can't move here.")
 
 
 def main():
