@@ -14,4 +14,6 @@ A01253802
 LinnyPurple
 
 ## Any important comments you'd like to make about your work:
-Replace this line with any comments you want to share
+NOTE: This game requires that you have VLC downloaded on your computer.
+You may receive errors when running this for the first time. Just
+uninstall, then re-install, and things should work.

@@ -7,65 +7,14 @@ All of your code must go in this file.
 import math
 import random
 import time
+import vlc
 
 """
-Questions since Chris took off our "training wheels":
-- What would be best defined as constants?
-- Can we use classes?
+Find all functions by the following regex: def ([a-z]|\_)*(\({1}([a-z]|\_|\,|\s)*\){1}):{1}
 """
-
-
-# ~~~ CONSTANTS ~~~
-ENCOUNTER_RATE = 20
-ATK_MULT = 2
-DEF_MULT = 0.5
 
 
 # ~~~ DATA ~~~
-classes = ['fighter', 'warrior', 'cleric', 'wizard', 'thief', 'robot']
-
-enemies = {
-    'Dream Cell': {
-        'stat_hp': 10,
-        'stat_mp': 2,
-        'stat_atk': 2,
-        'stat_def': 2,
-        'stat_mag': 2,
-        'stat_mdf': 2,
-        'stat_spd': 2,
-        'stat_luk': 2,
-        'skills': ['Bounce', 'Wait'],
-        'exp': 5,
-        'money': 2
-    },
-    'Spider': {
-        'stat_hp': 15,
-        'stat_mp': 5,
-        'stat_atk': 5,
-        'stat_def': 1,
-        'stat_mag': 3,
-        'stat_mdf': 1,
-        'stat_spd': 4,
-        'stat_luk': 5,
-        'skills': ['Bite', 'Crawl'],
-        'exp': 8,
-        'money': 6
-    },
-    'Sleep Paralysis Demon': {
-        'stat_hp': 1000,
-        'stat_mp': 1000,
-        'stat_atk': 200,
-        'stat_def': 100,
-        'stat_mag': 200,
-        'stat_mdf': 100,
-        'stat_spd': 350,
-        'stat_luk': 500,
-        'skills': ['Dark Shock'],
-        'exp': 10000,
-        'money': 10000
-    }
-}
-
 colors_dict = {
     'b_black': '\033[40m',
     'c_reset': '\033[0m',
@@ -84,7 +33,9 @@ def get_color(color):
     Return a string to change the color on the screen.
 
     :param color: A string representing the color.
-    :return:
+    :precondition: color must be a key string in local variable colors_dict.
+    :postcondition: Return the string value from key color.
+    :return: A string.
     colors_dict = {
         'b_black': '\033[40m',
         'c_reset': '\033[0m',
@@ -112,7 +63,18 @@ def get_room_status(row, column):
     :postcondition: Determine the room's status as a string for the (row, column)-coordinate on the game board.
     :return: Room status string for the (row, column)-coordinate on the game board.
     """
-    return 0
+    if 21 <= row <= 24 and column < 4:
+        return f"This is the beginning area. No enemies spawn here."
+    elif (21 <= row <= 24 and 4 <= column <= 24) or (row, column) == (20, 24):
+        return f"This is the first area. Made to train for the tough battles ahead."
+    elif 10 <= row <= 19 and column <= 7:
+        return f"This is the second area, void of any color."
+    elif 3 <= row <= 9 and 12 <= column <= 24:
+        return f"This is the third area, where the mountains are high and temperatures are low."
+    elif (row, column) == (1, 24) or 2 <= row <= 19:
+        return f"This is the main area of the game."
+    elif row == 0:
+        return f"This is the final area, where the Dream Demon himself lies."
 
 
 def make_board(rows, columns):
@@ -132,7 +94,7 @@ def make_board(rows, columns):
     board = {}
     for row in range(rows):
         for column in range(columns):
-            board[(row, column)] = 'Empty Room'
+            board[(row, column)] = get_room_status(row, column)
     return board
 
 
@@ -387,6 +349,105 @@ def set_class_bonus(character, class_selection):
             character['stat_max_' + stat_bonus] += math.ceil(class_dict[stat_bonus] / divider)
 
 
+def switch_statements():
+    """
+    Set the switch statements.
+
+    :return: A dictionary with keys listing events and boolean values if they happened (initially set to False).
+    """
+    events = {
+        'organ_man_1': False,
+        'organ_man_2': False,
+        'organ_man_3': False,
+        'organ_man_final': False,
+        'first_town_first_visit': False,
+        'colorless_first_visit': False,
+        'mountains_first_visit': False,
+        'boss_1': False,
+        'boss_2': False,
+        'boss_3': False,
+        'boss_final': False
+    }
+    return events
+
+
+def town():
+    """
+    Initiate a town sequence.
+
+    :return:
+    """
+    return 0
+
+
+def check_town_events(character, events):
+    """
+    <>
+
+    :param character:
+    :param events:
+    :return:
+    """
+    if (character['x'], character['y']) == (2, 22) and not events['first_town_first_visit']:
+        print(f"Welcome to the first town of the game!")
+        events['first_town_first_visit'] = True
+
+
+def check_organ_man_events(character, events):
+    """
+    <>
+
+    :param character:
+    :param events:
+    :return:
+    """
+    if character['x'] == 14 and character['y'] >= 21 and not events['organ_man_1']:
+        print(f"???: HOLY CRAP, IS THAT ORGAN MAN!?\n"
+              f"- You hear someone shouting that isn't you. A well-suited man rolls over in a portable organ. He looks"
+              f"  very cheery.\n"
+              f"Organ Man: WELL, WELL, WELL...WHAT DO WE HAVE HERE? IT IS I, ORGAN MAN, WHO LIVES WITH MY TRUSTY\n"
+              f"ORGAN! DO YOU CARE TO DUEL ME IN A BATTLE OF MUSIC?")
+        battle(character, get_enemy('Organ Man'))
+        print(f"Organ Man: WOW, YOU ARE VERY STRONG! 'TILL WE MEET AGAIN!\n"
+              f"- Organ Man rolls away, the sounds of his organ disappearing along with him.")
+        events['organ_man_1'] = True
+
+
+def check_boss_events(character, events):
+    """
+    <>
+
+    :param character:
+    :param events:
+    :return:
+    """
+    if (character['x'], character['y']) == (24, 20):
+        print(f"- A large, menacing humanoid figure made of straw blocks the way. It has a matching straw hat and\n"
+              f"isn't budging a bit...\n"
+              f"...but it suddenly grabs out towards you! It doesn't look like this fiend won't go down without a\n"
+              f"fight!")
+        battle(character, get_enemy('Straw Beast'))
+        print(f"The surrounding area is filled with pieces of straw, but you can process further now!")
+        events['boss_1'] = True
+    return 0
+
+
+def check_events(character, events):
+    """
+    Run an event if there is one where the character is and hasn't been executed.
+
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :param events: A dictionary representing events that have happened in the game.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :precondition: events must be a dictionary with string keys and boolean values.
+    :postcondition: Run the given event if not run yet.
+    :return:
+    """
+    check_town_events(character, events)
+    check_organ_man_events(character, events)
+    check_boss_events(character, events)
+
+
 def print_character_stats(character):
     """
     Print the character stats on the screen.
@@ -539,7 +600,7 @@ def print_room(row, column, character):
     B - Boss
     F - Final Boss
     O - Organ Man Event
-    T - Town (Buy, Inn)
+    T - Town (Buy, Inn) [✶□✶]
 
     :param row: An integer representing the row value on the game board.
     :param column: An integer representing the column value on the game board.
@@ -590,6 +651,7 @@ def print_board(board, character, square_size):
         for column in range(x_left, x_right + 1):
             printed_row += print_room(row, column, character)
         print(f"{printed_row}")
+    print(board[(character['y'], character['x'])])
 
 
 def convert_direction_choice(dir_input):
@@ -704,22 +766,23 @@ def move_character(character, direction):
     character['y'] += direction_tuple[1]
 
 
-def set_skill(skill_name, mp_use, atk_power, mag_power, multiplier, description, use_area, battle_text):
+def set_skill(skill_name, mp_use, attack_power, defense, multiplier, description, use_area, battle_text):
     """
     Return a dictionary for a skill.
 
     :param skill_name: A string representing the skill's name.
     :param mp_use: A positive integer representing the magic points used up when the skill is used.
-    :param atk_power: An integer representing the attack power of the skill.
-    :param mag_power: An integer representing the magic power of the skill.
+    :param attack_power: An integer representing the attack power of the skill.
+    :param defense: A string or positive integer representing the defense formula.
     :param multiplier: A number representing the damage multiplier of the skill.
     :param description: A string representing what is shown when seeing the skill in the menu.
     :param use_area: An integer representing where this skill can be used (1 for outside battle only, -1 for in battle
                      only, 0 for both).
     :param battle_text: A string that shows when using the skill in battle
     :precondition: skill_name, description, and battle_text must be strings.
-    :precondition: atk_power and mag_power must be integers.
+    :precondition: attack must be an integer.
     :precondition: mp_use must be a positive integer.
+    :precondition: defense must be a a string representing a valid stat (e.g. 'stat_def') or a positive integer.
     :precondition: multiplier must be a number (integer or float).
     :precondition: use_area must be an integer in [-1, 0, 1].
     :postcondition: Creates a dictionary for a skill.
@@ -728,8 +791,8 @@ def set_skill(skill_name, mp_use, atk_power, mag_power, multiplier, description,
     skill_dict = {
         'skill_name': skill_name,
         'mp_use': mp_use,
-        'atk_power': atk_power,
-        'mag_power': mag_power,
+        'atk_power': attack_power,
+        'defense': defense,
         'multiplier': multiplier,
         'description': description,
         'use_area': use_area,
@@ -738,14 +801,28 @@ def set_skill(skill_name, mp_use, atk_power, mag_power, multiplier, description,
     return skill_dict
 
 
-def get_skill(character, skill):
+def get_defense(defender, skill):
+    """
+    Return the defense to be used in the skill calculation.
+
+    :param defender: A dictionary representing either the character or the enemy.
+    :param skill: A dictionary representing the skill being used.
+    :precondition: defender must be a dictionary with stats (and (x, y)-coordinates if the character).
+    :return:
+    """
+    if skill['defense'] == 0:
+        return 0
+    return defender[skill['defense']]
+
+
+def get_skill(attacker, skill):
     """
     Return a skill as a dictionary.
 
-    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :param attacker: A dictionary representing either the character or the enemy.
     :param skill: A string representing the skill's name.
-    :precondition: character must be a dictionary with stats and coordinates.
-    :precondition: skill_name, description, and battle_text must be strings.
+    :precondition: attacker must be a dictionary with stats (and (x, y)-coordinates if the character).
+    :precondition: skill must be a string.
     :postcondition: Create a dictionary for a skill.
     :return: A dictionary for a skill.
     """
@@ -757,25 +834,96 @@ def get_skill(character, skill):
     enemy_use = use_area['in_battle']
     skills_dict = {
         # Player Skills
-        'Double Attack': set_skill(skill, 2, character['stat_atk'], 0, 2, 'Does twice the damage.',
-                                   use_area['in_battle'], 'attacks the enemy with a strong force!'),
-        'Heal': set_skill(skill, 2, 0, -20, 1, 'Heals the player.', use_area['both'], 'casts Heal!'),
-        'Fire': set_skill(skill, 2, 0, int(20 + character['stat_mag'] / 4), 1, 'Burns the foe with fire.',
-                          use_area['in_battle'], 'casts Fire!'),
+        'Double Attack': set_skill(skill,
+                                   2,
+                                   attacker['stat_atk'],
+                                   'stat_def',
+                                   2,
+                                   'Does twice the damage.',
+                                   use_area['in_battle'],
+                                   'attacks the enemy with a strong force'),
+        'Heal': set_skill(skill,
+                          2,
+                          -int(20 + attacker['stat_mag'] / 4),
+                          0,
+                          1,
+                          'Heals the player.',
+                          use_area['both'],
+                          'casts Heal'),
+        'Fire': set_skill(skill,
+                          2,
+                          int(20 + attacker['stat_mag'] / 4),
+                          'stat_mdf',
+                          1,
+                          'Burns the foe with fire.',
+                          use_area['in_battle'],
+                          'casts Fire'),
         # Enemy Skills
-        'Bounce': set_skill(skill, 0, character['stat_atk'], 0, 2.5, 'Bounce on the enemy.', enemy_use,
-                            'bounces high and falls down!'),
-        'Wait': set_skill(skill, 0, 0, 0, 0, 'Waits.', enemy_use, 'does nothing!'),
-        'Bite': set_skill(skill, 1, character['stat_atk'], 0, 2.5, 'Bite the enemy.', enemy_use,
-                          'takes a nice bite of your flesh!'),
-        'Crawl': set_skill(skill, 2, character['stat_atk'] + character['stat_spd'], 0, 2, 'Crawl on the enemy',
-                           enemy_use, 'crawls around on your body, giving you the shivers!'),
-        'Funky Music': set_skill(skill, 0, 0, character['stat_mag'], character['stat_luk'], 'Play some funky music on'
-                                                                                            'the organ.', enemy_use,
-                                 'SETS THE BATTLEFIELD ON FIRE WITH HIS EPIC ORGAN CHORDS!'),
-        'Wind': set_skill(skill, 4, 0, character['stat_mag'], 2, 'Deal wind damage.', enemy_use, 'casts Wind!')
+        'Bounce': set_skill(skill,
+                            0,
+                            attacker['stat_atk'],
+                            'stat_def',
+                            2.5,
+                            'Bounce on the enemy.',
+                            enemy_use,
+                            'bounces high and falls down'),
+        'Wait': set_skill(skill,
+                          0,
+                          0,
+                          0,
+                          0,
+                          'Waits.',
+                          enemy_use,
+                          'does nothing'),
+        'Bite': set_skill(skill,
+                          1,
+                          attacker['stat_atk'],
+                          'stat_def',
+                          2.5,
+                          'Bite the enemy.',
+                          enemy_use,
+                          'takes a nice bite of your flesh'),
+        'Crawl': set_skill(skill,
+                           2,
+                           attacker['stat_atk'] + attacker['stat_spd'],
+                           'stat_def',
+                           2,
+                           'Crawl on the enemy',
+                           enemy_use,
+                           'crawls around on your body, giving you the shivers'),
+        'Funky Music': set_skill(skill,
+                                 0,
+                                 attacker['stat_mag'],
+                                 'stat_mdf',
+                                 attacker['stat_luk'],
+                                 'Play some funky music on the organ.',
+                                 enemy_use,
+                                 'SETS THE BATTLEFIELD ON FIRE WITH HIS EPIC ORGAN CHORDS'),
+        'Wind': set_skill(skill,
+                          4,
+                          attacker['stat_mag'],
+                          'stat_mdf',
+                          2,
+                          'Deal wind damage.',
+                          enemy_use,
+                          'casts Wind')
     }
     return skills_dict[skill]
+
+
+def add_skill(character, skill):
+    """
+    Add a skill to the character.
+
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :param skill: A string representing the skill's name.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :precondition: skill must be a string.
+    :postcondition: Add skill to character['skills']
+    :return:
+    """
+    new_skill = get_skill(character, skill)
+    character['skills'].append(new_skill)
 
 
 def check_for_foes():
@@ -841,12 +989,21 @@ def get_enemy(enemy):
     :return: A dictionary with for the enemy with stats.
     """
     enemy_dicts = {
+        # Regular Enemies
         'Dream Cell': set_enemy(enemy, 10, 2, 2, 2, 2, 2, 2, 2, ['Bounce', 'Wait'], 5, 2),
         'Spider': set_enemy(enemy, 15, 3, 3, 1, 2, 1, 4, 5, ['Bite', 'Crawl'], 8, 6),
         'Organ Man': set_enemy(enemy, 30, 20, 4, 4, 4, 4, 4, 4, ['Funky Music'], 20, 12),
-        'First Boss': set_enemy(enemy, 40, 10, 6, 4, 6, 4, 10, 20, ['Wind'], 50, 40),
+        'Dream Shell': set_enemy(enemy, 20, 5, 4, 6, 4, 6, 2, 2, ['Spike'], 12, 6),
+        'Dream Hell': set_enemy(enemy, 50, 10, 12, 12, 8, 12, 16, 20, ['Destruction'], 25, 16),
+        'Eerie Ghost': set_enemy(enemy, 75, 20, 25, 5, 25, 5, 30, 50, ['Death Scare'], 40, 40),
+
+        # Bosses
+        'Straw Beast': set_enemy(enemy, 40, 10, 6, 4, 6, 4, 10, 20, ['Wind'], 50, 40),  # First Boss
+        'Void': set_enemy(enemy, 75, 20, 10, 12, 16, 12, 15, 30, ['Blinding Attack'], 125, 100),  # Colorless Boss
+        'Dark Lord': set_enemy(enemy, 120, 80, 15, 20, 25, 20, 20, 20, ['Elemental Freeze'], 300, 225),  # Mountain Boss
         'Sleep Paralysis Demon': set_enemy(enemy, 1000, 1000, 200, 100, 200, 100, 350, 500, ['Dark Shock'], 10000,
-                                           10000)
+                                           10000),  # Hidden boss that appears 1% of the time at the inn
+        'Dream Demon': set_enemy(enemy, 200, 200, 30, 30, 30, 30, 30, 30, ['Nightmare Fuel'], 0, 0)  # Final Boss
     }
     return enemy_dicts[enemy]
 
@@ -907,6 +1064,82 @@ def generate_enemy(row, column):
         return generate_main_area_enemies(row, column)
 
 
+def check_critical_chance(critical_chance):
+    """
+    Return the critical hit multiplier to the attack.
+
+    :param critical_chance: An integer representing if the attack is a critical hit.
+    :precondition: critical_chance must be an integer >= 0.
+    :postcondition: Calculate the critical hit multiplier if the attack is a critical hit.
+    :return: A float, representing the number to multiply to the initial attack value.
+    """
+    if not critical_chance:
+        critical_base = 1.5
+        critical_slope = 0.5
+        critical_variance = critical_slope * random.random() + critical_base
+        print(f"{colors_dict['c_yellow']}A critical hit!{colors_dict['c_reset']}")
+        return critical_variance
+    return 1
+
+
+def attacker_is_defender(attacker, defender):
+    """
+    Return whether the attacker is the defender. Used for self-boosting stat skills.
+
+    :param attacker: A dictionary representing either the character or the enemy.
+    :param defender: A dictionary representing either the character or the enemy.
+    :precondition: attacker must be a dictionary with stats (and (x, y)-coordinates if the character).
+    :precondition: defender must be a dictionary with stats (and (x, y)-coordinates if the character).
+    :precondition: One of attacker/defender must be the character dictionary, with the other being the enemy dictionary.
+    :return:
+    """
+    return -1 if attacker == defender else 1
+
+
+def print_damage_output(attacker, defender, damage):
+    """
+    Print the amount of damage dealt/healed after attacking/using a skill.
+
+    :param attacker:
+    :param defender:
+    :param damage:
+    :return:
+    """
+    if attacker == defender:
+        print(f"{attacker['name']} heals {-1 * damage} points of damage!")
+    else:
+        print(f"{attacker['name']} deals {damage} points of damage!")
+
+
+def use_skill(attacker, defender, skill):
+    """
+    Return skill damage/healing in battle.
+
+    :param attacker: A dictionary representing either the character or the enemy.
+    :param defender: A dictionary representing either the character or the enemy.
+    :param skill: A dictionary representing the skill being used.
+    :precondition: attacker must be a dictionary with stats (and (x, y)-coordinates if the character).
+    :precondition: defender must be a dictionary with stats (and (x, y)-coordinates if the character).
+    :precondition: skill must be a formatted skill dictionary.
+    :precondition: One of attacker/defender must be the character dictionary, with the other being the enemy dictionary.
+    :postcondition: Calculate the damage/healing to deal in battle as an integer.
+    :return: An integer, the damage the defender will receive (or health the attacker will gain).
+    """
+    base = 0.8
+    slope = 0.4
+    random_number = slope * random.random() + base
+    skill_damage = (skill['atk_power'] * skill['multiplier'] - get_defense(defender, skill)) * random_number
+    print(f"{attacker['name']} {skill['battle_text']}!")
+    if skill_damage > 0:  # No need to critical hit for a skill like Heal
+        critical_chance = random.randint(0, max(0, int(20 - attacker['stat_luk'] / 50)))
+        skill_damage *= check_critical_chance(critical_chance)
+        skill_damage = max(0, skill_damage)
+    skill_damage = int(skill_damage)
+    defender['stat_hp'] -= int(skill_damage * attacker_is_defender(attacker, defender))
+    defender['stat_hp'] = max(0, defender['stat_max_hp'])
+    print_damage_output(attacker, defender, skill_damage)
+
+
 def attack(attacker, defender):
     """
     Return attack damage in battle.
@@ -928,16 +1161,11 @@ def attack(attacker, defender):
     critical_chance = random.randint(0, max(0, int(20 - attacker['stat_luk'] / 50)))
     attack_damage = (attacker['stat_atk'] * multiplier - defender['stat_def']) * random_number
     print(f"{attacker['name']} attacks!")
-    if not critical_chance:
-        critical_base = 1.5
-        critical_slope = 0.5
-        critical_variance = critical_slope * random.random() + critical_base
-        attack_damage *= critical_variance
-        print(f"{colors_dict['c_yellow']}A critical hit!{colors_dict['c_reset']}")
+    attack_damage *= check_critical_chance(critical_chance)
     attack_damage = max(0, int(attack_damage))
     defender['stat_hp'] -= attack_damage
     defender['stat_hp'] = max(0, defender['stat_hp'])
-    print(f"{attacker['name']} deals {attack_damage} points of damage!")
+    print_damage_output(attacker, defender, attack_damage)
 
 
 def level_up(character):
@@ -1048,7 +1276,7 @@ def battle(character, enemy):
     :precondition: enemy must be a dictionary with stats.
     :postcondition: Run through the battle and end it when either character['stat_hp'] or enemy['stat_hp'] is 0.
     """
-    print(f"\nA {enemy['name']} wants to fight!")
+    print(f"\n{enemy['name']} wants to fight!")
     while True:
         print(f"1. ({colors_dict['c_blue']}A{colors_dict['c_reset']})ttack\n"
               f"2. ({colors_dict['c_blue']}S{colors_dict['c_reset']})kill\n"
@@ -1077,7 +1305,8 @@ def battle(character, enemy):
                 if battle_input == 'Attack':
                     attack(character, enemy)
                 elif battle_input == 'Skill':
-                    print(f"Still in testing!")
+                    if 'Cleric' in [character['class'], character['subclass']]:
+                        use_skill(character, character, get_skill(character, 'Heal'))
                 elif battle_input == 'Item':
                     print(f"Still in testing!")
                 if enemy['stat_hp'] == 0:
@@ -1088,9 +1317,12 @@ def battle(character, enemy):
                 attack(enemy, character)
                 if character['stat_hp'] == 0:
                     print(f"You died!")
+                    # TODO: End game here.
                     return None
             player_attacking = not player_attacking
             actions_left -= 1
+        print(f"{character['stat_hp']}/{character['stat_max_hp']}")
+        print(f"{enemy['stat_hp']}/{enemy['stat_max_hp']}")
 
 
 def game():
@@ -1098,6 +1330,8 @@ def game():
     Run through the game's logic.
     """
     # ~~~ Set variables ~~~
+    # p = vlc.MediaPlayer('.\\play.mp3')
+    # p.play()
     rows = 25
     columns = 25
     board = make_board(rows, columns)
@@ -1113,9 +1347,13 @@ def game():
         print(f"\nThat's already your main class. Please choose again.")
         character['subclass'] = set_class(selecting_subclass)
     set_class_bonus(character, 'subclass')
+    if 'class' in ['Cleric'] or 'subclass' in ['Cleric']:
+        add_skill(character, 'Heal')
     print_character_stats(character)
+    events = switch_statements()
+    check_events(character, events)
     valid_move = False  # Added here so I don't output the map twice.
-    square_size = 51
+    square_size = 7
     while character['stat_hp'] > 0:
         if not valid_move:  # Added here so I don't output the map twice.
             print_board(board, character, square_size)
@@ -1124,6 +1362,8 @@ def game():
         if valid_move:
             move_character(character, direction)
             print_board(board, character, square_size)
+            check_events(character, events)
+            # TODO: Print board after a successful event
             there_is_a_challenger = check_for_foes()
             if there_is_a_challenger:
                 enemy = generate_enemy(character['y'], character['x'])
