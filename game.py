@@ -14,28 +14,19 @@ Find all functions by the following regex: def ([a-z]|\_)*(\({1}([a-z]|\_|\,|\s)
 """
 
 
-# ~~~ DATA ~~~
-colors_dict = {
-    'b_black': '\033[40m',
-    'c_reset': '\033[0m',
-    'c_black': '\033[30m',
-    'c_red': '\033[91m',
-    'c_green': '\033[92m',
-    'c_yellow': '\033[93m',
-    'c_blue': '\033[94m',
-    'c_magenta': '\033[95m',
-    'c_cyan': '\033[96m',
-    'c_white': '\033[97m'
-}
+# TODO: Add function annotations
 
-"""
+
+# ~~~ FUNCTIONS ~~~
 def get_color(color):
+    """
     Return a string to change the color on the screen.
 
     :param color: A string representing the color.
     :precondition: color must be a key string in local variable colors_dict.
     :postcondition: Return the string value from key color.
     :return: A string.
+    """
     colors_dict = {
         'b_black': '\033[40m',
         'c_reset': '\033[0m',
@@ -49,10 +40,8 @@ def get_color(color):
         'c_white': '\033[97m'
     }
     return colors_dict[color]
-"""
 
 
-# ~~~ FUNCTIONS ~~~
 def get_room_status(row, column):
     """
     Return the room's status on a rectangular game board.
@@ -86,10 +75,6 @@ def make_board(rows, columns):
     :precondition: rows and columns must be integers > 1.
     :postcondition: Creates a dictionary with (x, y)-coordinates as keys and room status as string values.
     :return: A dictionary of rooms' (x, y)-coordinates and their statuses.
-    >>> make_board(2, 2)
-    {(0, 0): 'Empty Room', (0, 1): 'Empty Room', (1, 0): 'Empty Room', (1, 1): 'Empty Room'}
-    >>> make_board(3, 2)
-    {(0, 0): 'Empty Room', (0, 1): 'Empty Room', (1, 0): 'Empty Room', (1, 1): 'Empty Room', (2, 0): 'Empty Room', (2, 1): 'Empty Room'}
     """
     board = {}
     for row in range(rows):
@@ -120,8 +105,7 @@ def make_character():
         'stat_spd': 2,
         'stat_luk': 2,
         'skills': [],
-        'weapon': [],
-        'armor': [],
+        'items': {'Dream Candy': 1, 'Water': 2, 'Vanilla Ice Cream': 1, 'Super Candy': 3, 'Chocolate Sundae': 2},
         'exp': 0,
         'money': 0,
         'x': 0,
@@ -248,27 +232,27 @@ def convert_short_input(player_input, short_input, long_input):
 
 
 def print_class_descriptions(subclass):
-    fighter_text = f"1. ({colors_dict['c_blue']}F{colors_dict['c_reset']})ighter"
-    knight_text = f"2. ({colors_dict['c_blue']}K{colors_dict['c_reset']})night"
-    cleric_text = f"3. ({colors_dict['c_blue']}C{colors_dict['c_reset']})leric"
-    wizard_text = f"4. ({colors_dict['c_blue']}W{colors_dict['c_reset']})izard"
-    thief_text = f"5. ({colors_dict['c_blue']}T{colors_dict['c_reset']})hief"
-    robot_text = f"6. ({colors_dict['c_blue']}R{colors_dict['c_reset']})obot"
+    fighter_text = f"1. ({get_color('c_blue')}F{get_color('c_reset')})ighter"
+    knight_text = f"2. ({get_color('c_blue')}K{get_color('c_reset')})night"
+    cleric_text = f"3. ({get_color('c_blue')}C{get_color('c_reset')})leric"
+    wizard_text = f"4. ({get_color('c_blue')}W{get_color('c_reset')})izard"
+    thief_text = f"5. ({get_color('c_blue')}T{get_color('c_reset')})hief"
+    robot_text = f"6. ({get_color('c_blue')}R{get_color('c_reset')})obot"
     if subclass:
         print(f"\nTime to choose the subclass you want to be.\n"
-              f"{fighter_text}: +1 HP,  +2 ATK, +1 AGI, +1 LUK\n"
+              f"{fighter_text}: +1 HP,  +2 ATK, +1 SPD, +1 LUK\n"
               f"{knight_text}:  +2 HP,  +1 ATK, +2 DEF\n"
               f"{cleric_text}:  +1 HP,  +1 MP,  +1 MAG, +2 MDF\n"
               f"{wizard_text}:  +2 MP,  +2 MAG, +1 MDF\n"
-              f"{thief_text}:   +1 ATK, +1 MDF, +2 AGI, +2 LUK\n"
+              f"{thief_text}:   +1 ATK, +1 MDF, +2 SPD, +2 LUK\n"
               f"{robot_text}:   +2 HP,  +2 DEF, +1 MDF")
     else:
         print(f"\nTime to choose the class you want to be.\n"
-              f"{fighter_text}: +2 HP,  +3 ATK, +2 AGI, +1 LUK\n"
+              f"{fighter_text}: +2 HP,  +3 ATK, +2 SPD, +1 LUK\n"
               f"{knight_text}:  +3 HP,  +2 ATK, +3 DEF\n"
               f"{cleric_text}:  +1 HP,  +2 MP,  +2 MAG, +3 MDF\n"
               f"{wizard_text}:  +3 MP,  +3 MAG, +2 MDF\n"
-              f"{thief_text}:   +1 ATK, +1 MDF, +3 AGI, +3 LUK\n"
+              f"{thief_text}:   +1 ATK, +1 MDF, +3 SPD, +3 LUK\n"
               f"{robot_text}:   +3 HP,  +3 DEF, +2 MDF")
 
 
@@ -343,10 +327,27 @@ def set_class_bonus(character, class_selection):
     }
     class_dict = class_bonuses[character[class_selection]]
     for stat_bonus in class_dict:
-        print(stat_bonus)
         character['stat_' + stat_bonus] += math.ceil(class_dict[stat_bonus] / divider)
         if stat_bonus in 'hpmp':
             character['stat_max_' + stat_bonus] += math.ceil(class_dict[stat_bonus] / divider)
+
+
+def intro():
+    """
+    Print the intro sequence of the game.
+    """
+    print(f"- You find yourself waking up in a quiet area that you can't seem to recognize. Slowly picking yourself\n"
+          f"  off the ground, the surrounding area is a clear, white abyss. Almost nothing to the eye.\n"
+          f"- From your left, someone walks by and stops beside you. He has a large straw hat on, but you can't see\n"
+          f"  his eyes. Turning over to you, he begins to speak.\n"
+          f"???: He got you too, didn't he?\n"
+          f"- But you don't know what he's talking about. 'He got you too'? What happened when you fell asleep?\n"
+          f"???: I've been trying to find a cure to wake myself up, but I heard the only way to get it is by kiiling\n"
+          f"     the Dream Demon. But nobody's been strong enough to face off against him. They all become obstacles\n"
+          f"     for the rest of us who fight to open our eyes once again.\n"
+          f"- Without a word, he walks off, leaving you there to ponder over what happened. You try to remember bits\n"
+          f"  and pieces about yourself, but only come up with your name.\n"
+          f"- So...who are you, anyways?")
 
 
 def switch_statements():
@@ -382,7 +383,7 @@ def town():
 
 def check_town_events(character, events):
     """
-    <>
+    Run through a town event.
 
     :param character:
     :param events:
@@ -391,11 +392,57 @@ def check_town_events(character, events):
     if (character['x'], character['y']) == (2, 22) and not events['first_town_first_visit']:
         print(f"Welcome to the first town of the game!")
         events['first_town_first_visit'] = True
+    elif (character['x'], character['y']) == (0, 10) and not events['colorless_first_visit']:
+        print(f"- As you enter this new town, you notice instantly how...colorless the town is. White and black as\n"
+              f"  far as the eye can see. You take a look at yourself...you still have the color on your body. So\n"
+              f"  what happened?\n"
+              f"- You see someone come up to you, someone void of color. He looks sad.\n"
+              f"???: Hey. You an outsider?\n"
+              f"- You nod hesitantly. His voice is sharp like a large blade.\n"
+              f"J: The name's J. I built this town with my bare hands, but overnight, the color just...poof! Gone!\n"
+              f"   Ya look like someone who could help bring it back. Could ya do it for me?\n"
+              f"- He casually cracks his fingers, making you nod in response.\n"
+              f"J: I'm certain there's something to bring the color back around here somewhere...a dark, sinister\n"
+              f"   creature came by here once, making the rest of the townsfolk cower in fear. I'll give ya a nice\n"
+              f"   reward if ya can bring my town back to life!")
+        events['colorless_first_visit'] = True
+    elif (character['x'], character['y']) == (24, 2) and not events['mountains_first_visit']:
+        print(f"- The grassy terrain changes into one of thick, white snow. Your feet sink into the snow, leaving a\n"
+              f"  noticeable footprint with each step you take. Colorful lights are strung along the walls of every\n"
+              f"  house, each one a quaint little wooden cabin. You feel like you could live here for a long time.\n"
+              f"- Suddenly, you see something gracefully walk across the snow: a bipedal panda, only six inches tall.\n"
+              f"  It's wearing a pink, blue and white cloth around its body, and stops right by your feet.\n"
+              f"Panda: OH MY GOSH!\n"
+              f"- Staring up at you, the panda climbs up your leg and up your torso. Trying to remove it from your\n"
+              f"  body doesn't do anything, allowing it to climb up to your face. Once there, it positions itself\n"
+              f"  and begins to boop you on the nose with immense speed. Even though the panda is blocking your view,\n"
+              f"  it feels quite nice to have a soft, fluffy panda comforting you in such a way.\n"
+              f"???: Ahem!\n"
+              f"- A loud cough comes from in front of you, and the panda stops booping. It turns around and jumps off\n"
+              f"  you in shock.\n"
+              f"Panda: MAMA!\n"
+              f"???: Ali, what did we say about booping strangers?\n"
+              f"Ali: But mama...they looked very cold!\n"
+              f"???: I know, I know.\n"
+              f"- The black-haired woman takes the panda and lets it rest on her shoulder.\n"
+              f"Katt: I'm sorry...{character['name']}, thanks. I'm Katt, the mayor of this town. Ali here is a\n"
+              f"      little...what should I say? ...Fiesty.\n"
+              f"Ali: I am NOT, mama!\n"
+              f"- Katt chuckles at Ali's reaction.\n"
+              f"Katt: Though she has been a little more...upset, so to speak.\n"
+              f"Ali: Yeah! Greystone's nose has disappeared!\n"
+              f"Katt: Greystone's one of her best friends. A much smaller panda. He woke up one day without his\n"
+              f"      nose, and his fur has slowly been coming off.\n"
+              f"Ali: Can you please help find it? I don't want his fur to go away!\n"
+              f"- Ali cowers her head. You feel guilty and accept their request.\n"
+              f"Katt: A group of theives have been stealing things and head off to the farthest mountains. I'm certain\n"
+              f"      they've went there. We wish you the best of luck!")
+        events['mountains_first_visit'] = True
 
 
 def check_organ_man_events(character, events):
     """
-    <>
+    Run through an Organ Man event.
 
     :param character:
     :param events:
@@ -415,19 +462,20 @@ def check_organ_man_events(character, events):
 
 def check_boss_events(character, events):
     """
-    <>
+    Run through a boss event.
 
     :param character:
     :param events:
     :return:
     """
-    if (character['x'], character['y']) == (24, 20):
+    if (character['x'], character['y']) == (24, 20) and not events['boss_1']:
         print(f"- A large, menacing humanoid figure made of straw blocks the way. It has a matching straw hat and\n"
-              f"isn't budging a bit...\n"
+              f"isn't budging a bit. It stares down at you as if it has seen you before...\n"
               f"...but it suddenly grabs out towards you! It doesn't look like this fiend won't go down without a\n"
               f"fight!")
         battle(character, get_enemy('Straw Beast'))
-        print(f"The surrounding area is filled with pieces of straw, but you can process further now!")
+        print(f"The surrounding area is filled with pieces of straw. Your eyes swell up, but you can't explain why.\n"
+              f"Though the path is now clear, allowing you to venture further into this world!")
         events['boss_1'] = True
     return 0
 
@@ -543,17 +591,17 @@ def print_color(row, column):
     :return: A string representing an area in the board, or None if it doesn't exist.
     """
     if 21 <= row <= 24 and column < 4:
-        return f"{colors_dict['c_white']}¤¤¤{colors_dict['c_reset']}"
+        return f"{get_color('c_white')}¤¤¤{get_color('c_reset')}"
     elif (21 <= row <= 24 and 4 <= column <= 24) or (row, column) == (20, 24):
-        return f"{colors_dict['c_magenta']}≡≡≡{colors_dict['c_reset']}"
+        return f"{get_color('c_magenta')}≡≡≡{get_color('c_reset')}"
     elif 10 <= row <= 19 and column <= 7:
-        return f"{colors_dict['c_yellow']}◊ð≈{colors_dict['c_reset']}"
+        return f"{get_color('c_yellow')}◊ð≈{get_color('c_reset')}"
     elif 3 <= row <= 9 and 12 <= column <= 24:
-        return f"{colors_dict['c_cyan']}△Λ▴{colors_dict['c_reset']}"
+        return f"{get_color('c_cyan')}△Λ▴{get_color('c_reset')}"
     elif (row, column) == (1, 24) or 2 <= row <= 19:
-        return f"{colors_dict['c_green']}Îî↑{colors_dict['c_reset']}"
+        return f"{get_color('c_green')}Îî↑{get_color('c_reset')}"
     elif row == 0:
-        return f"{colors_dict['b_black']}{colors_dict['c_red']}Ξ♰Ψ{colors_dict['c_reset']}"
+        return f"{get_color('b_black')}{get_color('c_red')}Ξ♰Ψ{get_color('c_reset')}"
     return None
 
 
@@ -611,8 +659,8 @@ def print_room(row, column, character):
     """
     if character['x'] == column and character['y'] == row:
         if row == 0:
-            return f"{colors_dict['b_black']}{colors_dict['c_blue']}<P>{colors_dict['c_reset']}"
-        return f"{colors_dict['c_blue']}<P>{colors_dict['c_reset']}"
+            return f"{get_color('b_black')}{get_color('c_blue')}<P>{get_color('c_reset')}"
+        return f"{get_color('c_blue')}<P>{get_color('c_reset')}"
     corner = print_corner(row, column)
     if corner is not None:
         return corner
@@ -671,6 +719,12 @@ def convert_direction_choice(dir_input):
     (0, 1)
     >>> convert_direction_choice('4')
     (-1, 0)
+    >>> convert_direction_choice('p')
+    (0, 0)
+    >>> convert_direction_choice('buy')
+    (0, 0)
+    >>> convert_direction_choice('6')
+    (0, 0)
     """
     dir_movement = [0, 0]
     if dir_input in '1n' or dir_input == 'north':
@@ -681,19 +735,66 @@ def convert_direction_choice(dir_input):
         dir_movement[1] += 1
     elif dir_input in '4w' or dir_input == 'west':
         dir_movement[0] -= 1
+    elif dir_input in '5p' or dir_input == 'pack':
+        dir_movement[0] = 5
+    elif dir_input in '6b' or dir_input == 'buy':
+        dir_movement[0] = 6
     return tuple(dir_movement)
 
 
-def get_user_choice():
+def print_choices(character, choices_list, color_string):
+    """
+    Print the choices for the user to make when on the map.
+
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :param choices_list: A list of strings representing choices for the player.
+    :param color_string: A string representing a color to change the terminal text/background to.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :precondition: choices_list must be a list containing string choices.
+    :precondition: color_string must be a string that can change the terminal text color/background.
+    :postcondition: Print the choices for the player to make.
+    """
+    for index, choice in enumerate(choices_list):
+        a_string = f"{index + 1}. ({get_color(color_string)}{choice[0].upper()}{get_color('c_reset')}){choice[1:]}"
+        number_of_tabs = f"\t" * (5 - (len(choice) + 1) // 4)
+        if color_string == 'c_green':
+            a_string += f"{number_of_tabs} Cost: {get_item(choice.title())['item_cost']}"
+        elif color_string == 'c_cyan':
+            a_string += f"{number_of_tabs} ({character['items'][choice.title()]})"
+        print(a_string)
+
+
+def at_town(character, options):
+    """
+    Return town options if player is at a town.
+
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :param options: A list or string of options.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :postcondition: Determine if character is at a town, then return town options.
+    :return: A list consisting of town options if character is at a town, otherwise an empty list.
+    """
+    if (character['x'], character['y']) in [(2, 22), (0, 10), (24, 2)]:
+        if type(options) == list:
+            options.extend(['buy', 'inn'])
+        elif type(options) == str:
+            options = options[0:len(options) // 2] + '67' + options[len(options) // 2:len(options)] + 'bi'
+    return options
+
+
+def get_user_choice(character):
     """
     Return the user's coordinate choice.
 
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :postconditions: Calculate (x, y)-coordinates depending on user's input.
     :return: Tuple (x, y)-coordinates depending on user's input.
     """
-    print(f"1. (N)orth\n2. (E)ast\n3. (S)outh\n4. (W)est")
+    coordinate_list = at_town(character, ['north', 'east', 'south', 'west', 'pack'])
+    print_choices(character, coordinate_list, 'c_blue')
     dir_input = input("Which direction do you want to go? ").lower()
-    short_list = '1234nesw'
-    coordinate_list = ['north', 'east', 'south', 'west']
+    short_list = at_town(character, '12345neswp')
     while (dir_input not in short_list or (dir_input in short_list and len(dir_input) != 1))\
             and dir_input not in coordinate_list:
         print(f"Invalid input.")
@@ -708,7 +809,10 @@ def is_wall(row, column, character):
     :param row: A positive integer.
     :param column: A positiver integer.
     :param character: A dictionary representing the character's stats and (x, y)-coordinates.
-    :return:
+    :precondition: row and column must be positive integers.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :postcondition: Calculate whether the (row, column) value on the board is a wall.
+    :return: A boolean, True if (row, column) is a wall, false otherwise.
     """
     wall_strings = ["╔", "╗", "╚", "╝", "║", "╩", "═"]
     for wall_string in wall_strings:
@@ -747,7 +851,8 @@ def validate_move(board, character, direction):
     new_y = character['y'] + direction_tuple[1]
     inbound = 0 <= new_x < columns and 0 <= new_y < rows
     wall = is_wall(new_y, new_x, character)
-    return inbound and not wall
+    not_moving = direction[0] in [0, 5, 6]
+    return (inbound and not wall) or not_moving
 
 
 def move_character(character, direction):
@@ -838,10 +943,18 @@ def get_skill(attacker, skill):
                                    2,
                                    attacker['stat_atk'],
                                    'stat_def',
-                                   2,
+                                   3,
                                    'Does twice the damage.',
                                    use_area['in_battle'],
                                    'attacks the enemy with a strong force'),
+        'Holy Slash': set_skill(skill,
+                                3,
+                                attacker['stat_atk'],
+                                'stat_def',
+                                attacker['stat_max_mp'] / 10,
+                                'A damage with that gets stronger with a higher MP stat.',
+                                use_area['in_battle'],
+                                'brings light to their weapon and attacks the enemy with a holy blow'),
         'Heal': set_skill(skill,
                           2,
                           -int(20 + attacker['stat_mag'] / 4),
@@ -858,6 +971,23 @@ def get_skill(attacker, skill):
                           'Burns the foe with fire.',
                           use_area['in_battle'],
                           'casts Fire'),
+        'Critical Slash': set_skill(skill,
+                                    3,
+                                    attacker['stat_atk'],
+                                    'stat_def',
+                                    2,
+                                    'An attack with a higher critical hit chance.',
+                                    use_area['in_battle'],
+                                    'slashes the enemy with a critical blow'),
+        'Enemy Info': set_skill(skill,
+                                1,
+                                0,
+                                0,
+                                0,
+                                'Gets enemy info for the player.',
+                                use_area['in_battle'],
+                                'analyzes the enemy'),
+
         # Enemy Skills
         'Bounce': set_skill(skill,
                             0,
@@ -899,6 +1029,86 @@ def get_skill(attacker, skill):
                                  'Play some funky music on the organ.',
                                  enemy_use,
                                  'SETS THE BATTLEFIELD ON FIRE WITH HIS EPIC ORGAN CHORDS'),
+        'Spike': set_skill(skill,
+                           0,
+                           attacker['stat_atk'],
+                           'stat_def',
+                           3,
+                           'Attack the enemy with the spikes on your back.',
+                           enemy_use,
+                           'penetrates with its massive spikes'),
+        'Wing Smack': set_skill(skill,
+                                1,
+                                attacker['stat_atk'] + attacker['stat_mag'] * 0.5,
+                                'stat_def',
+                                2,
+                                'Slam the enemy with wings.',
+                                enemy_use,
+                                'slams you with its powerful wings'),
+        'Roll Around': set_skill(skill,
+                                 2,
+                                 attacker['stat_hp'],
+                                 0,
+                                 3,
+                                 'Squish the enemy.',
+                                 enemy_use,
+                                 'flattens you like a pancake'),
+        '4-Sided Kill': set_skill(skill,
+                                  4,
+                                  attacker['stat_atk'],
+                                  'stat_def',
+                                  4,
+                                  'Prick the enemy with the four corners.',
+                                  enemy_use,
+                                  'slashes you with its corners'),
+        'Soothing Song': set_skill(skill,
+                                   4,
+                                   attacker['stat_mag'],
+                                   'stat_mdf',
+                                   attacker['stat_mp'],
+                                   'Sing a soothing yet effective song against the enemy.',
+                                   enemy_use,
+                                   'sings its heart out'),
+        'Scratch': set_skill(skill,
+                             0,
+                             attacker['stat_atk'],
+                             'stat_def',
+                             2.5,
+                             'Scratch the opponent.',
+                             enemy_use,
+                             'scratches you with its claws'),
+        'Flee': set_skill(skill,
+                          0,
+                          0,
+                          0,
+                          0,
+                          'Run away from battle.',
+                          enemy_use,
+                          'runs away from battle'),
+        'Destruction': set_skill(skill,
+                                 5,
+                                 attacker['stat_hp'] + attacker['stat_atk'],
+                                 'stat_def',
+                                 2,
+                                 'Attack the enemy with a strong blow.',
+                                 enemy_use,
+                                 'plows you with a strong attack'),
+        'Death Scare': set_skill(skill,
+                                 0,
+                                 attacker['stat_atk'] + attacker['stat_mag'],
+                                 'stat_def',
+                                 3,
+                                 'Scare the enemy with its worst nightmares.',
+                                 enemy_use,
+                                 'shocks you with a deadly scare'),
+        'Transform': set_skill(skill,
+                               0,
+                               0,
+                               0,
+                               0,
+                               'Transform into another enemy.',
+                               enemy_use,
+                               'transforms'),
         'Wind': set_skill(skill,
                           4,
                           attacker['stat_mag'],
@@ -906,7 +1116,39 @@ def get_skill(attacker, skill):
                           2,
                           'Deal wind damage.',
                           enemy_use,
-                          'casts Wind')
+                          'casts Wind'),
+        'Blinding Attack': set_skill(skill,
+                                     5,
+                                     attacker['stat_mag'],
+                                     'stat_mdf',
+                                     2,
+                                     'Blind the enemy with a strong flash of light.',
+                                     enemy_use,
+                                     'flashes you with a strong light spell'),
+        'Elemental Freeze': set_skill(skill,
+                                      10,
+                                      attacker['stat_mag'],
+                                      'stat_mdf',
+                                      3,
+                                      'Attack the enemy with a strong ice attack.',
+                                      enemy_use,
+                                      'conjures up a strong blizzard and blasts you with a sharp, cold freeze'),
+        'Dark Shock': set_skill(skill,
+                                20,
+                                attacker['stat_atk'] + attacker['stat_mag'],
+                                0,
+                                2,
+                                'Send a paralyzing shock to the enemy.',
+                                enemy_use,
+                                'send a paralyzing shock through your body'),
+        'Nightmare Fuel': set_skill(skill,
+                                    10,
+                                    attacker['stat_mag'],
+                                    'stat_mdf',
+                                    5,
+                                    'Bring the enemy\'s worst nightmares to life.',
+                                    enemy_use,
+                                    'brings your worst nightmares to life, mauling you in the process')
     }
     return skills_dict[skill]
 
@@ -924,6 +1166,304 @@ def add_skill(character, skill):
     """
     new_skill = get_skill(character, skill)
     character['skills'].append(new_skill)
+
+
+def set_item(item_name, item_cost, item_boost, item_stat_boost, item_usable):
+    """
+    Return a dictionary for an item.
+
+    :param item_name: A string representing the item's name.
+    :param item_cost: A positive integer representing the item's cost at a store.
+    :param item_boost: A positive integer representing the amount to heal/boost a stat.
+    :param item_stat_boost: A list representing a stat (or stats) to heal/boost.
+    :param item_usable: A boolean representing whether an item can be used.
+    :precondition: item_name must be a non-empty string.
+    :precondition: item_cost and item_boost must be positive integers.
+    :precondition: item_stat_boost must be a list of a valid stat (or stats) (e.g. 'stat_atk').
+    :precondition: item_usable must be a boolean (True if usable, False otherwise).
+    :postcondition: Creates a dictionary for an item.
+    :return: A dictionary for an item.
+    """
+    item_dict = {
+        'item_name': item_name,
+        'item_cost': item_cost,
+        'item_boost': item_boost,
+        'item_stat_boost': item_stat_boost,
+        'item_usable': item_usable
+    }
+    return item_dict
+
+
+def get_item(item):
+    """
+    Return an item as a dictionary.
+
+    :param item: A string representing the item's name.
+    :precondition: item must be a string of a valid item.
+    :postcondition: Creates a dictionary of item.
+    :return: A dictionary of item.
+    """
+    items_dict = {
+        # Regular Items
+        'Dream Candy': set_item(item,
+                                5,
+                                10,
+                                ['stat_hp'],
+                                True),
+        'Water': set_item(item,
+                          15,
+                          10,
+                          ['stat_mp'],
+                          True),
+        'Vanilla Ice Cream': set_item(item,
+                                      12,
+                                      30,
+                                      ['stat_hp'],
+                                      True),
+        'Chocolate Sundae': set_item(item,
+                                     30,
+                                     30,
+                                     ['stat_hp'],
+                                     True),
+        'Super Candy': set_item(item,
+                                100,
+                                2,
+                                ['stat_atk', 'stat_def', 'stat_mag', 'stat_mdf', 'stat_spd', 'stat_luk'],
+                                True),
+
+        # Key Items
+        'Greystone\'s Nose': set_item(item,
+                                      0,
+                                      0,
+                                      ['stat_hp'],
+                                      False),
+        'The Cure': set_item(item,
+                             0,
+                             0,
+                             ['stat_hp'],
+                             False)
+    }
+    return items_dict[item]
+
+
+def list_all_lower(string_list):
+    """
+    Return a list with all elements inside strings of lowercase characters.
+
+    :param string_list: A list with string elements.
+    :precondition: string_list must be a list with string elements.
+    :postcondition: Make all the strings in string_list lowercase.
+    :return: string_list with all strings lowercase.
+    >>> list_all_lower([])
+    []
+    >>> list_all_lower(['HELLO'])
+    ['hello']
+    >>> list_all_lower(['hello'])
+    ['hello']
+    >>> list_all_lower(['GOOD', 'bAd', 'okay'])
+    ['good', 'bad', 'okay']
+    """
+    for index, string in enumerate(string_list):
+        string_list[index] = string.lower()
+    return string_list
+
+
+def string_first_letter_sorted_items(items):
+    """
+    Return a string to use for input validation.
+
+    :param items: A list representing a sorted list of in-game items.
+    :precondition: items must be a list with strings representing in-game items the player has.
+    :postcondition: Creates a string of the list elements sorted alphabetically.
+    :return: A string of the list elements sorted alphabetically.
+    """
+    numbers = ''
+    first_letters = ''
+    for index, item in enumerate(items):
+        numbers += str(index + 1)
+        first_letters += item[0].lower()
+    return numbers + first_letters
+
+
+def convert_item_input(item_input, short_items, long_items):
+    """
+    Return the item's full name depending on the input from the player.
+
+    :param item_input: A string representing the input made by the player for the item.
+    :param short_items: A string representing the one-character inputs for items the character has.
+    :param long_items: A list representing the full names for items the character has.
+    :precondition: item_input must be a string representing the input made by the player.
+    :precondition: short_items must be a string of the one-character inputs for items the character has.
+    :precondition: long_items must be a list with full names for items the character has.
+    :postcondition: Determine the long form of item_input.
+    :return: A string representing the long form of item_input.
+    >>> short = '1d'
+    >>> long = ['dream candy']
+    >>> item = 'd'
+    >>> convert_item_input(item, short, long)
+    'dream candy'
+    >>> short = '12sw'
+    >>> long = ['super candy', 'water']
+    >>> item = '2'
+    >>> convert_item_input(item, short, long)
+    'water'
+    >>> short = '123cdv'
+    >>> long = ['chocolate sundae', 'dream candy', 'vanilla ice cream']
+    >>> item = 'vanilla ice cream'
+    >>> convert_item_input(item, short, long)
+    'vanilla ice cream'
+    """
+    for index in range(len(long_items)):
+        if item_input in str(index + 1) + short_items[len(short_items) // 2 + index]:
+            return long_items[index]
+    return item_input
+
+
+def use_item(character, item):
+    """
+    Run through the process of using an item.
+
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :param item: A string representing the input made by the player for the item.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :precondition: item must be a string representing a valid in-game item.
+    :postcondition: Use item on character.
+    """
+    item_to_use = get_item(item)
+    for index, stat in enumerate(item_to_use['item_stat_boost']):
+        character[stat] += item_to_use['item_boost']
+        if stat[-2:] in 'hpmp':
+            character[f'stat_{stat[-2:]}'] = min(character[f'stat_{stat[-2:]}'], character[f'stat_max_{stat[-2:]}'])
+    character['items'][item_to_use['item_name']] -= 1
+    if not character['items'][item_to_use['item_name']]:
+        character['items'].pop(item_to_use['item_name'])
+
+
+def pack(character):
+    """
+    Check the pack.
+
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :return:
+    """
+    if len(character['items']):
+        sorted_items = list_all_lower(sorted(list(character['items'].keys())))
+        print_choices(character, sorted_items, 'c_cyan')
+        short_sorted_items = string_first_letter_sorted_items(sorted_items)
+        item_input = input(f"Which item do you want to use? ").lower()
+        if (item_input not in short_sorted_items or (item_input in short_sorted_items and len(item_input) != 1))\
+                and item_input not in sorted_items:
+            return None
+        else:
+            item_input = convert_item_input(item_input, short_sorted_items, sorted_items).title()
+            use_item(character, item_input)
+    else:
+        print(f"Your pack is empty!")
+
+
+def get_shop(character):
+    """
+    Return the shop the player is at.
+
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :postcondition: Create a list of items to buy depending on character's location.
+    :return: A list of items depending on character's location.
+    """
+    if character['x'] == 24:
+        print(f"Welcome to 'I've Been Chilling' Ice Cream Parlor!")
+        return ['vanilla Ice Cream', 'chocolate Sundae']
+    print(f"Welcome to my shop!")
+    return ['dream Candy', 'water']
+
+
+def convert_buy_input(buy_input, shop_items):
+    """
+    Return the item's full name depending on the input from the player.
+
+    :param buy_input: A string representing the input the player made to buy the item.
+    :param shop_items: A list of strings representing the items in the shop.
+    :precondition: buy_input must be a string of valid input (e.g. '1' or 'Dream Candy').
+    :precondition: shop_items must be a list of strings with the items to buy.
+    :postcondition: Determine what the player is about to buy.
+    :return: The item the player is about to buy.
+    """
+    if buy_input[0] in '1dv':
+        return shop_items[0]
+    return shop_items[1]
+
+
+def checkout(character, buy_input):
+    """
+    Run through process of buying the item (if possible).
+
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :param buy_input: A string representing the item the player wants to buy.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :precondition: buy_input must be a string of a valid in-game item.
+    :postcondition: Check if the item can be bought, and add it to character's inventory if so.
+    """
+    item_to_buy = get_item(buy_input)
+    if character['money'] >= item_to_buy['item_cost']:
+        character['money'] -= item_to_buy['item_cost']
+        if buy_input not in character['items'].keys():
+            character['items'][buy_input] = 0
+        character['items'][buy_input] += 1
+        print(f"You just bought a {buy_input}. Have a good day!")
+    else:
+        print(f"Sorry, {character['name']}. I can't give credit. Come back when you're a little...MMM...richer!")
+
+
+def buy(character):
+    """
+    Run through buying an item.
+
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :return: What character has bought
+    """
+    shop_items = get_shop(character)
+    print_choices(character, shop_items, 'c_green')
+    buy_input = input(f"What do you want to buy? ").lower()
+    short_shop_items = '12' + shop_items[0][0] + shop_items[1][0]
+    if (buy_input not in short_shop_items or (buy_input in short_shop_items and len(buy_input) != 1))\
+            and buy_input not in shop_items:
+        print(f"Have a good day!")
+    else:
+        buy_input = convert_buy_input(buy_input, shop_items).title()
+        checkout(character, buy_input)
+
+
+def inn(character):
+    """
+    Check the inn.
+
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :return:
+    """
+    return 0
+
+
+def perform_character_action(character, direction):
+    """
+
+    :param character: A dictionary representing the character's stats and (x, y)-coordinates.
+    :param direction: A string which is the given direction.
+    :precondition: character must be a dictionary with stats and coordinates.
+    :precondition: direction is a string and a valid directional input (i.e. in '1234nesw', 'north', 'east', 'south',
+                   or 'west').
+    :postcondition: Move the character, check items, buy, or sleep.
+    """
+    if direction[0] in '5p':
+        pack(character)
+    elif direction[0] in '6b':
+        buy(character)
+    elif direction[0] in '7i':
+        inn(character)
+    else:
+        move_character(character, direction)
 
 
 def check_for_foes():
@@ -988,47 +1528,71 @@ def get_enemy(enemy):
     :postcondition: Creates a dictionary for the enemy with stats.
     :return: A dictionary with for the enemy with stats.
     """
-    enemy_dicts = {
+    enemies_dict = {
         # Regular Enemies
-        'Dream Cell': set_enemy(enemy, 10, 2, 2, 2, 2, 2, 2, 2, ['Bounce', 'Wait'], 5, 2),
-        'Spider': set_enemy(enemy, 15, 3, 3, 1, 2, 1, 4, 5, ['Bite', 'Crawl'], 8, 6),
-        'Organ Man': set_enemy(enemy, 30, 20, 4, 4, 4, 4, 4, 4, ['Funky Music'], 20, 12),
-        'Dream Shell': set_enemy(enemy, 20, 5, 4, 6, 4, 6, 2, 2, ['Spike'], 12, 6),
-        'Dream Hell': set_enemy(enemy, 50, 10, 12, 12, 8, 12, 16, 20, ['Destruction'], 25, 16),
-        'Eerie Ghost': set_enemy(enemy, 75, 20, 25, 5, 25, 5, 30, 50, ['Death Scare'], 40, 40),
+        'Dream Cell': set_enemy(enemy, 10, 2, 2, 2, 2, 2, 2, 2, ['Bounce', 'Wait'], 5, 2),  # 1M
+        'Spider': set_enemy(enemy, 15, 3, 3, 1, 2, 1, 4, 5, ['Bite', 'Crawl'], 8, 6),  # 1M
+        'Organ Man': set_enemy(enemy, 30, 20, 3, 3, 3, 3, 3, 3, ['Funky Music'], 20, 12),  # 123F
+        'Dream Shell': set_enemy(enemy, 20, 5, 4, 6, 4, 6, 2, 2, ['Spike'], 12, 6),  # M
+        'Giant Moth': set_enemy(enemy, 35, 20, 5, 4, 10, 8, 6, 6, ['Wing Smack'], 15, 10),  # M
+        'Dream Swell': set_enemy(enemy, 25, 8, 3, 15, 15, 3, 3, 3, ['Roll Around'], 16, 8),  # 2
+        'Floating Square': set_enemy(enemy, 32, 12, 12, 12, 8, 8, 12, 4, ['4-Sided Kill'], 24, 12),  # 2
+        'Dream Bell': set_enemy(enemy, 35, 20, 6, 20, 20, 12, 10, 30, ['Soothing Song'], 27, 12),  # 3
+        'Mountain Lion': set_enemy(enemy, 40, 10, 7, 7, 5, 7, 10, 10, ['Scratch'], 20, 15),  # 3
+        'Golden Ticket': set_enemy(enemy, 5, 5, 5, 5, 5, 5, 5, 5, ['Flee'], 200, 200),  # 3
+        'Dream Hell': set_enemy(enemy, 50, 10, 12, 12, 8, 12, 16, 20, ['Destruction'], 25, 16),  # F
+        'Eerie Ghost': set_enemy(enemy, 75, 20, 25, 5, 25, 5, 30, 50, ['Death Scare'], 40, 40),  # F
+        'Illusion': set_enemy(enemy, 1, 1, 1, 1, 1, 1, 100, 1, ['Transform'], 500, 500),  # F (Becomes a strong enemy)
+        'I3': set_enemy(enemy, 0, 0, 0, 0, 0, 0, 0, 0, ['I3-Skill'], 0, 0),
 
         # Bosses
-        'Straw Beast': set_enemy(enemy, 40, 10, 6, 4, 6, 4, 10, 20, ['Wind'], 50, 40),  # First Boss
+        'Straw Beast': set_enemy(enemy, 40, 10, 4, 3, 5, 5, 8, 12, ['Wind'], 50, 40),  # First Boss
         'Void': set_enemy(enemy, 75, 20, 10, 12, 16, 12, 15, 30, ['Blinding Attack'], 125, 100),  # Colorless Boss
         'Dark Lord': set_enemy(enemy, 120, 80, 15, 20, 25, 20, 20, 20, ['Elemental Freeze'], 300, 225),  # Mountain Boss
         'Sleep Paralysis Demon': set_enemy(enemy, 1000, 1000, 200, 100, 200, 100, 350, 500, ['Dark Shock'], 10000,
                                            10000),  # Hidden boss that appears 1% of the time at the inn
         'Dream Demon': set_enemy(enemy, 200, 200, 30, 30, 30, 30, 30, 30, ['Nightmare Fuel'], 0, 0)  # Final Boss
     }
-    return enemy_dicts[enemy]
+    return enemies_dict[enemy]
 
 
-def generate_first_area_enemies(row, column):
+def generate_first_area_enemies(column):
     """
     Generate enemies from the first area of the game.
 
-    :param row: An integer representing the row value on the game board.
     :param column: An integer representing the column value on the game board.
-    :precondition: row and column must be integers that are valid row and column values in the game board.
-    :postcondition: Generate an enemy dictionary given row and column.
+    :precondition: column must be an integer that is a valid column value in the game board.
+    :postcondition: Generate an enemy dictionary given column.
     :return: An enemy as a dictionary.
     """
     if 4 <= column <= 13:
         return get_enemy('Dream Cell')
-    enemy_generated = random.randint(0, 19)
-    if enemy_generated < 10:
+    enemy_generated = random.randint(0, 1)
+    if enemy_generated:
         return get_enemy('Dream Cell')
     return get_enemy('Spider')
 
 
-def generate_main_area_enemies(row, column):
+def generate_second_area_enemies(row):
     """
-    Generate enemies from the main area of the game.
+    Generate enemies from the second (colorless) area of the game.
+
+    :param row: An integer representing the row value on the game board.
+    :precondition: row must be an integer that is a valid row value in the game board.
+    :postcondition: Generate an enemy dictionary given row.
+    :return: An enemy as a dictionary.
+    """
+    if row <= 15:
+        return get_enemy('Dream Swell')
+    enemy_generated = random.randint(0, 1)
+    if enemy_generated:
+        return get_enemy('Dream Swell')
+    return get_enemy('Floating Square')
+
+
+def generate_third_area_enemies(row, column):
+    """
+    Generate enemies from the third (mountains) area of the game.
 
     :param row: An integer representing the row value on the game board.
     :param column: An integer representing the column value on the game board.
@@ -1036,7 +1600,46 @@ def generate_main_area_enemies(row, column):
     :postcondition: Generate an enemy dictionary given row and column.
     :return: An enemy as a dictionary.
     """
-    return get_enemy('Dream Cell')
+    if (row, column) == (6, 21):
+        return get_enemy('Golden Ticket')
+    enemy_generated = random.randint(0, 5)
+    if enemy_generated <= 2:
+        return get_enemy('Dream Bell')
+    return get_enemy('Mountain Lion')
+
+
+def generate_main_area_enemies():
+    """
+    Generate enemies from the main area of the game.
+
+    :return: An enemy as a dictionary.
+    """
+    enemy_generated = random.randint(0, 9)
+    if enemy_generated <= 1:
+        return get_enemy('Dream Cell')
+    elif enemy_generated <= 6:
+        return get_enemy('Spider')
+    elif enemy_generated <= 9:
+        return get_enemy('Dream Shell')
+    return get_enemy('Giant Moth')
+
+
+def generate_final_area_enemies(row, column):
+    """
+    Generate enemies from the final (dark world) area of the game.
+
+    :param row: An integer representing the row value on the game board.
+    :param column: An integer representing the column value on the game board.
+    :precondition: row and column must be integers that are valid row and column values in the game board.
+    :postcondition: Generate an enemy dictionary given row and column.
+    :return: An enemy as a dictionary.
+    """
+    enemy_generated = random.randint(0, 9)
+    if enemy_generated <= 2:
+        return get_enemy('Dream Hell')
+    elif enemy_generated <= 8:
+        return get_enemy('Eerie Ghost')
+    return get_enemy('Illusion')
 
 
 def generate_enemy(row, column):
@@ -1053,15 +1656,15 @@ def generate_enemy(row, column):
     if 21 <= row <= 24 and column < 4:  # First area of the game, shouldn't generate any enemies (white)
         return None
     elif (21 <= row <= 24 and 4 <= column <= 24) or (row, column) == (20, 24):  # First area (magenta)
-        return generate_first_area_enemies(row, column)
+        return generate_first_area_enemies(column)
     elif 10 <= row <= 19 and column <= 7:  # Second area (yellow)
-        return generate_main_area_enemies(row, column)
+        return generate_second_area_enemies(row)
     elif 3 <= row <= 9 and 12 <= column <= 24:  # Third area (cyan)
-        return generate_main_area_enemies(row, column)
+        return generate_third_area_enemies(row, column)
     elif (row, column) == (1, 24) or 2 <= row <= 19:  # Main area (green)
-        return generate_main_area_enemies(row, column)
+        return generate_main_area_enemies()
     elif row == 0:  # Final area (black/red)
-        return generate_main_area_enemies(row, column)
+        return generate_final_area_enemies(row, column)
 
 
 def check_critical_chance(critical_chance):
@@ -1077,7 +1680,7 @@ def check_critical_chance(critical_chance):
         critical_base = 1.5
         critical_slope = 0.5
         critical_variance = critical_slope * random.random() + critical_base
-        print(f"{colors_dict['c_yellow']}A critical hit!{colors_dict['c_reset']}")
+        print(f"{get_color('c_yellow')}A critical hit!{get_color('c_reset')}")
         return critical_variance
     return 1
 
@@ -1091,7 +1694,8 @@ def attacker_is_defender(attacker, defender):
     :precondition: attacker must be a dictionary with stats (and (x, y)-coordinates if the character).
     :precondition: defender must be a dictionary with stats (and (x, y)-coordinates if the character).
     :precondition: One of attacker/defender must be the character dictionary, with the other being the enemy dictionary.
-    :return:
+    :postcondition: Determine if attacker equals defender, and return -1 if so, 1 if not.
+    :return: -1 if attacker is defender, 1 otherwise.
     """
     return -1 if attacker == defender else 1
 
@@ -1100,10 +1704,15 @@ def print_damage_output(attacker, defender, damage):
     """
     Print the amount of damage dealt/healed after attacking/using a skill.
 
-    :param attacker:
-    :param defender:
-    :param damage:
-    :return:
+    :param attacker: A dictionary representing either the character or the enemy.
+    :param defender: A dictionary representing either the character or the enemy.
+    :param damage: A integer representing the amount of damage the defender will receive.
+    :precondition: attacker must be a dictionary with stats (and (x, y)-coordinates if the character).
+    :precondition: defender must be a dictionary with stats (and (x, y)-coordinates if the character).
+    :precondition: One of attacker/defender must be the character dictionary, with the other being the enemy dictionary.
+    :precondition: defender must be an integer.
+    :postcondition: Print the amount of damage dealt/healed after attacker uses a skill (heal if attacker is defender,
+                    deal otherwise).
     """
     if attacker == defender:
         print(f"{attacker['name']} heals {-1 * damage} points of damage!")
@@ -1135,8 +1744,9 @@ def use_skill(attacker, defender, skill):
         skill_damage *= check_critical_chance(critical_chance)
         skill_damage = max(0, skill_damage)
     skill_damage = int(skill_damage)
-    defender['stat_hp'] -= int(skill_damage * attacker_is_defender(attacker, defender))
-    defender['stat_hp'] = max(0, defender['stat_max_hp'])
+    defender['stat_hp'] -= skill_damage
+    defender['stat_hp'] = min(defender['stat_hp'], defender['stat_max_hp'])  # No healing above maximum HP
+    defender['stat_hp'] = max(0, defender['stat_hp'])  # No going below 0 HP
     print_damage_output(attacker, defender, skill_damage)
 
 
@@ -1164,7 +1774,8 @@ def attack(attacker, defender):
     attack_damage *= check_critical_chance(critical_chance)
     attack_damage = max(0, int(attack_damage))
     defender['stat_hp'] -= attack_damage
-    defender['stat_hp'] = max(0, defender['stat_hp'])
+    defender['stat_hp'] = min(defender['stat_hp'], defender['stat_max_hp'])  # No healing above maximum HP
+    defender['stat_hp'] = max(0, defender['stat_hp'])  # No going below 0 HP
     print_damage_output(attacker, defender, attack_damage)
 
 
@@ -1178,7 +1789,7 @@ def level_up(character):
                     False).
     :return: A boolean, whether character can level up.
     """
-    next_level = 30 * character['level']**2 - 12 * character['level'] + 6
+    next_level = 30 * character['level']**2 - 12 * character['level'] + 6  # Experience equation
     next_level_exp_needed = max(0, next_level - character['exp'])
     print(f"{next_level_exp_needed} experience points until {character['level'] + 1}!")
     return character['exp'] >= next_level
@@ -1206,8 +1817,8 @@ def class_stat_change(stat, character, class_type):
             or (stat == 'spd' and character[class_type] in ['Fighter', 'Thief'])\
             or (stat == 'luk' and character[class_type] in ['Fighter', 'Thief']):
         if class_type == 'class':
-            return random.randint(4, 5)
-        return random.randint(2, 3)
+            return random.randint(2, 3)
+        return random.randint(1, 2)
     return random.randint(0, 1)
 
 
@@ -1233,7 +1844,7 @@ def bonus_stats(character):
 
     :param character: A dictionary representing the character's stats and (x, y)-coordinates.
     :precondition: character must be a dictionary with stats and coordinates.
-    :return:
+    :postcondition: Add bonus stats to character depending on class and subclass.
     """
     character['level'] += 1
     print(f"\n{character['name']} has reached level {character['level']}!")
@@ -1278,21 +1889,18 @@ def battle(character, enemy):
     """
     print(f"\n{enemy['name']} wants to fight!")
     while True:
-        print(f"1. ({colors_dict['c_blue']}A{colors_dict['c_reset']})ttack\n"
-              f"2. ({colors_dict['c_blue']}S{colors_dict['c_reset']})kill\n"
-              f"3. ({colors_dict['c_blue']}I{colors_dict['c_reset']})tem\n"
-              f"4. ({colors_dict['c_blue']}F{colors_dict['c_reset']})lee")
+        battle_input_list = ['attack', 'skill', 'item', 'flee']
+        print_choices(character, battle_input_list, 'c_red')
         # Give player options for turn (attack, skill, run)
         battle_input = input("What will you do this turn? ").lower()
         short_battle_input = '1234asif'
-        battle_input_list = ['attack', 'skill', 'item', 'flee']
         while (battle_input not in short_battle_input or (battle_input in short_battle_input and
                                                           len(battle_input) != 1))\
                 and battle_input not in battle_input_list:
             invalid_input(short_battle_input)
             battle_input = input("What will you do this turn? ").lower()
         battle_input = convert_short_input(battle_input, short_battle_input, battle_input_list).title()
-        if battle_input == 'Flee':
+        if battle_input == 'Flee' and enemy['name'] not in ['Organ Man', 'Straw Beast', 'Dream Demon']:
             print(f"{character['name']} escapes!")
             return None
         # Determine turn order
@@ -1305,8 +1913,13 @@ def battle(character, enemy):
                 if battle_input == 'Attack':
                     attack(character, enemy)
                 elif battle_input == 'Skill':
+                    # TODO: Make a function to go through the skill stuff
+                    if 'Fighter' in [character['class'], character['subclass']]:
+                        use_skill(character, enemy, get_skill(character, 'Double Attack'))
                     if 'Cleric' in [character['class'], character['subclass']]:
                         use_skill(character, character, get_skill(character, 'Heal'))
+                    elif 'Wizard' in [character['class'], character['subclass']]:
+                        use_skill(character, enemy, get_skill(character, 'Fire'))
                 elif battle_input == 'Item':
                     print(f"Still in testing!")
                 if enemy['stat_hp'] == 0:
@@ -1314,7 +1927,12 @@ def battle(character, enemy):
                     post_battle(character, enemy)
                     return None
             else:
-                attack(enemy, character)
+                enemy_use_skill = random.randint(0, 1)
+                if enemy_use_skill:
+                    attack(enemy, character)
+                else:
+                    use = enemy['skills'][random.randint(0, len(enemy['skills']) - 1)]
+                    use_skill(enemy, character, get_skill(enemy, use))
                 if character['stat_hp'] == 0:
                     print(f"You died!")
                     # TODO: End game here.
@@ -1338,6 +1956,7 @@ def game():
     character = make_character()
     selecting_subclass = False
     # INTRO FUNCTION
+    intro()
     character['name'] = set_name()
     character['class'] = set_class(selecting_subclass)
     set_class_bonus(character, 'class')
@@ -1347,8 +1966,14 @@ def game():
         print(f"\nThat's already your main class. Please choose again.")
         character['subclass'] = set_class(selecting_subclass)
     set_class_bonus(character, 'subclass')
-    if 'class' in ['Cleric'] or 'subclass' in ['Cleric']:
+    if 'class' in ['Fighter'] or 'subclass' in ['Fighter']:
+        add_skill(character, 'Fighter')
+    elif 'class' in ['Cleric'] or 'subclass' in ['Cleric']:
         add_skill(character, 'Heal')
+    elif 'class' in ['Wizard'] or 'subclass' in ['Wizard']:
+        add_skill(character, 'Fire')
+    print(f"- With the information you have in your hand, you feel ready to conquer whatever's in front of you.\n"
+          f"- Go forth...and have fun!")
     print_character_stats(character)
     events = switch_statements()
     check_events(character, events)
@@ -1357,10 +1982,11 @@ def game():
     while character['stat_hp'] > 0:
         if not valid_move:  # Added here so I don't output the map twice.
             print_board(board, character, square_size)
-        direction = get_user_choice()
+        direction = get_user_choice(character)
         valid_move = validate_move(board, character, direction)
         if valid_move:
-            move_character(character, direction)
+            # TODO: Perform character actions depending on moving, buying, or staying at the inn
+            perform_character_action(character, direction)
             print_board(board, character, square_size)
             check_events(character, events)
             # TODO: Print board after a successful event
