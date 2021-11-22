@@ -16,4 +16,4 @@ LinnyPurple
 ## Any important comments you'd like to make about your work:
 NOTE: This game requires that you have VLC downloaded on your computer.
 You may receive errors when running this for the first time. Just
-uninstall, then re-install, and things should work.
+uninstall VLC, then re-install, and things should work.
