@@ -4,6 +4,7 @@ Your student number: A01253802
 
 All of your code must go in this file.
 """
+import itertools
 import math
 import random
 import sys
@@ -14,7 +15,6 @@ Find all functions by the following regex: def ([a-z]|\_)*(\({1}([a-z]|\_|\,|\s)
 """
 
 
-# TODO: Add itertools somewhere
 # TODO: Add filter or map
 # TODO: Add the music to the game!
 
@@ -878,6 +878,19 @@ def at_town(character: dict, options: any) -> any:
     :precondition: character must be a dictionary with stats and coordinates.
     :postcondition: Determine if character is at a town, then return town options.
     :return: A list consisting of town options if character is at a town, otherwise an empty list.
+    >>> player = make_character()
+    >>> options_list = ['north', 'east', 'south', 'west', 'pack']
+    >>> options_string = '12345neswp'
+    >>> at_town(player, options_list)
+    ['north', 'east', 'south', 'west', 'pack']
+    >>> at_town(player, options_string)
+    '12345neswp'
+    >>> player['x'] = 2
+    >>> player['y'] = 22
+    >>> at_town(player, options_list)
+    ['north', 'east', 'south', 'west', 'pack', 'buy', 'inn']
+    >>> at_town(player, options_string)
+    '1234567neswpbi'
     """
     if (character['x'], character['y']) in [(2, 22), (0, 10), (24, 3)]:
         if type(options) == list:
@@ -918,6 +931,15 @@ def is_wall(row: int, column: int, character: dict) -> bool:
     :precondition: character must be a dictionary with stats and coordinates.
     :postcondition: Calculate whether the (row, column) value on the board is a wall.
     :return: A boolean, True if (row, column) is a wall, false otherwise.
+    >>> row_y = -1
+    >>> column_x = -1
+    >>> player = make_character()
+    >>> is_wall(row_y, column_x, player)
+    True
+    >>> row_y = 2
+    >>> column_x = 3
+    >>> is_wall(row_y, column_x, player)
+    False
     """
     wall_strings = ["╔", "╗", "╚", "╝", "║", "╩", "═"]
     for wall_string in wall_strings:
@@ -1015,7 +1037,15 @@ def get_defense(defender: dict, skill: dict) -> int:
     :param defender: A dictionary representing either the character or the enemy.
     :param skill: A dictionary representing the skill being used.
     :precondition: defender must be a dictionary with stats (and (x, y)-coordinates if the character).
-    :return:
+    :precondition: skill must be a dictionary of a valid in-game skill
+    :postcondition: Calculates the defense to use in the attack/skill calculation.
+    :return: An integer representing the defense to use in the attack/skill calculation.
+    >>> player = make_character()
+    >>> enemy = get_enemy('Dream Cell')
+    >>> get_defense(enemy, get_skill(player, 'Fire'))
+    2
+    >>> get_defense(player, get_skill(player, 'Heal'))
+    0
     """
     if skill['defense'] == 0:
         return 0
@@ -1067,8 +1097,8 @@ def get_skill(attacker: dict, skill: str) -> dict:
                                     3,
                                     attacker['stat_atk'],
                                     'stat_def',
-                                    2,
-                                    'An attack with a higher critical hit chance.',
+                                    2 + attacker['stat_luk'] / 10,
+                                    'An attack that increases with the user\'s luck.',
                                     'slashes the enemy with a critical blow'),
         'Enemy Info': set_skill(skill,
                                 1,
@@ -1234,7 +1264,7 @@ def initialize_class_skills(character: dict) -> None:
         elif character[class_type] == 'Wizard':
             add_skill(character, 'Fire')
         elif character[class_type] == 'Thief':
-            add_skill(character, 'Crtical Slash')
+            add_skill(character, 'Critical Slash')
         elif character[class_type] == 'Robot':
             add_skill(character, 'Enemy Info')
 
@@ -1335,9 +1365,10 @@ def list_all_lower(string_list: list) -> list:
     >>> list_all_lower(['GOOD', 'bAd', 'okay'])
     ['good', 'bad', 'okay']
     """
+    new_string_list = []
     for index, string in enumerate(string_list):
-        string_list[index] = string.lower()
-    return string_list
+        new_string_list.append(string.lower())
+    return new_string_list
 
 
 def list_to_string_by_first_letter(string_list: list) -> str:
@@ -1386,17 +1417,35 @@ def use_item(character: dict, item: str) -> None:
         character['items'].pop(item_to_use['item_name'])
 
 
+def get_lower(string):
+    """
+    Return the string but lowercase.
+
+    :param string: A string.
+    :precondition: string must be a string.
+    :postcondition: Get the lowercase version of string.
+    :return: The lowercase of string.
+    >>> get_lower('')
+    ''
+    >>> get_lower('hi')
+    'hi'
+    >>> get_lower('HELLO')
+    'hello'
+    """
+    return string.lower()
+
+
 def select_item(character: dict) -> any:
     """
     Select item to use.
 
     :param character: A dictionary representing the character's stats and (x, y)-coordinates.
     :precondition: character must be a dictionary with stats and coordinates.
-    :postcondition: Choose the item character will use.
-    :return: A string representing the item's name.
+    :postcondition: Choose the item character will use (or None for invalid inputs).
+    :return: A string representing the item's name, or None if an invalid input was given.
     """
     if len(character['items']):
-        sorted_items = list_all_lower(sorted(list(character['items'].keys())))
+        sorted_items = list(map(get_lower, sorted(list(character['items'].keys()))))
         print_choices(character, sorted_items, 'c_cyan')
         short_sorted_items = list_to_string_by_first_letter(sorted_items)
         item_input = input(f"Which item do you want to use? ").lower()
@@ -1529,7 +1578,7 @@ def check_for_foes() -> bool:
 
     :return: A boolean (True 20% of the time).
     """
-    foe_exists = random.randint(0, 999)
+    foe_exists = random.randint(0, 4)
     return not foe_exists
 
 
@@ -1603,11 +1652,11 @@ def get_enemy(enemy: str) -> dict:
 
         # Bosses
         'Straw Beast': set_enemy(enemy, 40, 10, 4, 3, 5, 5, 8, 12, ['Wind'], 50, 40),  # First Boss
-        'Void': set_enemy(enemy, 75, 20, 10, 12, 16, 12, 15, 30, ['Blinding Attack'], 125, 100),  # Colorless Boss
-        'Dark Lord': set_enemy(enemy, 120, 80, 15, 20, 25, 20, 20, 20, ['Elemental Freeze'], 300, 225),  # Mountain Boss
+        'Void': set_enemy(enemy, 75, 20, 8, 10, 12, 10, 12, 20, ['Blinding Attack'], 125, 100),  # Colorless Boss
+        'Dark Lord': set_enemy(enemy, 120, 80, 10, 15, 18, 15, 15, 15, ['Elemental Freeze'], 300, 225),  # Mountain Boss
         'Sleep Paralysis Demon': set_enemy(enemy, 1000, 1000, 200, 100, 200, 100, 350, 500, ['Dark Shock'], 10000,
                                            10000),  # Hidden boss that appears 1% of the time at the inn
-        'Dream Demon': set_enemy(enemy, 200, 200, 30, 30, 30, 30, 30, 30, ['Nightmare Fuel'], 0, 0)  # Final Boss
+        'Dream Demon': set_enemy(enemy, 200, 200, 20, 20, 20, 20, 20, 20, ['Nightmare Fuel'], 0, 0)  # Final Boss
     }
     return enemies_dict[enemy]
 
@@ -1658,7 +1707,7 @@ def generate_third_area_enemies(row: int, column: int) -> dict:
     """
     if (row, column) == (6, 21):
         return get_enemy('Golden Ticket')
-    enemy_generated = random.randint(0, 5)
+    enemy_generated = random.randint(0, 4)
     if enemy_generated <= 2:
         return get_enemy('Dream Bell')
     return get_enemy('Mountain Lion')
@@ -1675,7 +1724,7 @@ def generate_main_area_enemies() -> dict:
         return get_enemy('Dream Cell')
     elif enemy_generated <= 6:
         return get_enemy('Spider')
-    elif enemy_generated <= 9:
+    elif enemy_generated <= 8:
         return get_enemy('Dream Shell')
     return get_enemy('Giant Moth')
 
@@ -1689,9 +1738,7 @@ def generate_final_area_enemies() -> dict:
     enemy_generated = random.randint(0, 9)
     if enemy_generated <= 2:
         return get_enemy('Dream Hell')
-    elif enemy_generated <= 8:
-        return get_enemy('Eerie Ghost')
-    return get_enemy('Illusion')
+    return get_enemy('Eerie Ghost')
 
 
 def generate_enemy(row: int, column: int) -> any:
@@ -1916,8 +1963,8 @@ def class_stat_change(stat: str, character: dict, class_type: str) -> int:
             or (stat == 'spd' and character[class_type] in ['Fighter', 'Thief'])\
             or (stat == 'luk' and character[class_type] in ['Fighter', 'Thief']):
         if class_type == 'class':
-            return random.randint(2, 3)
-        return random.randint(1, 2)
+            return random.randint(4, 5)
+        return random.randint(2, 3)
     return random.randint(0, 1)
 
 
@@ -2111,6 +2158,12 @@ def game() -> None:
                     print_character_stats(character)
         else:
             print(f"Can't move here.")
+    number_left = 41
+    for index in itertools.cycle('~.^.'):
+        print(index, end='')
+        number_left -= 1
+        if not number_left:
+            break
     print(f"You beat the game!\nCONGRATULATIONS!")
 
 
