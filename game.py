@@ -15,10 +15,6 @@ Find all functions by the following regex: def ([a-z]|\_)*(\({1}([a-z]|\_|\,|\s)
 """
 
 
-# TODO: Add filter or map
-# TODO: Add the music to the game!
-
-
 # ~~~ FUNCTIONS ~~~
 def get_color(color: str) -> str:
     """
@@ -455,7 +451,7 @@ def check_organ_man_events(character: dict, events: dict) -> None:
         print(f"Organ Man: WOW, YOU ARE VERY STRONG! 'TILL WE MEET AGAIN!\n"
               f"- Organ Man rolls away, the sounds of his organ disappearing along with him.")
         events['organ_man_1'] = True
-    elif ((character['x'] < 7 and character['y'] == 16) or (12 <= character['x'] <= 16 and character['y'] == 7)\
+    elif ((character['x'] < 7 and character['y'] == 16) or (12 <= character['x'] <= 16 and character['y'] == 7)
             or (character['x'] == 16 and character['y'] in [8, 9])) and not events['organ_man_2']:
         print(f"???: HOLY CRAP, IS THAT ORGAN MAN!?\n"
               f"- The familiar sounds of the organ come your way. Despite the music sounding nice, Organ Man looks\n"
