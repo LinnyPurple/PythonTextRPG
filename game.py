@@ -502,6 +502,7 @@ def check_boss_events(character: dict, events: dict) -> None:
         print(f"The surrounding area is filled with pieces of straw. Your eyes swell up, but you can't explain why.\n"
               f"Though the path is now clear, allowing you to venture further into this world!")
         events['boss_1'] = True
+        vlc.MediaPlayer(r'\music\success.wav').play()
     elif (character['x'], character['y']) == (6, 19) and not events['boss_2']:
         print(f"- As you walk around, you notice a small black dot making its way towards you. Turning around, you\n"
               f"  find yourself lost. You might not be able to find your way back.\n"
@@ -519,6 +520,7 @@ def check_boss_events(character: dict, events: dict) -> None:
               f"   grateful.\n"
               f"- He walks off. Getting a chance to look around, it's much easier to make your way back.")
         events['boss_2'] = True
+        vlc.MediaPlayer(r'\music\success.wav').play()
     elif (character['x'], character['y']) == (12, 9) and not events['boss_3']:
         print(f"- Walking up some stairs, you find yourself at the peak of the mountain. A bunch of tattered clothes\n"
               f"  are spread across a long walkway, which leads to an empty glass throne. On the seat is a black\n"
@@ -566,6 +568,7 @@ def check_boss_events(character: dict, events: dict) -> None:
               f"- They walk down the mountain as you spend some time admiring the view. You haven't been this high up\n"
               f"  this whole time. You wonder if you'll ever get this experience again.")
         events['boss_3'] = True
+        vlc.MediaPlayer(r'\music\success.wav').play()
     elif (character['x'], character['y']) == (0, 0) and not events['boss_final']:
         print(f"- You look up and see a dark, ominous creature standing before you - the Dream Demon itself. It\n"
               f"  brings out its blade and prepares to fight.")
@@ -574,6 +577,7 @@ def check_boss_events(character: dict, events: dict) -> None:
               f"  Your eyes are blinded by it, forcing them to close. And the next time you open them, you finally\n"
               f"  wake up in your bed, feeling stronger than ever.")
         events['boss_final'] = True
+        vlc.MediaPlayer(r'\music\success.wav').play()
 
 
 def check_events(character: dict, events: dict) -> None:
@@ -2113,8 +2117,6 @@ def game() -> None:
     Run through the game's logic.
     """
     # ~~~ Set variables ~~~
-    # p = vlc.MediaPlayer('.\\play.mp3')
-    # p.play()
     rows = 25
     columns = 25
     board = make_board(rows, columns)
@@ -2133,6 +2135,8 @@ def game() -> None:
     set_class_bonus(character, 'subclass')
     initialize_class_skills(character)
     print(f"- With the information you have in your hand, you feel ready to conquer whatever's in front of you.\n"
+          f"- As a hint, the first town is 2 east, then two north. Use it as a reference. Other towns are right by\n"
+          f"  a noticable area.\n"
           f"- Go forth...and have fun!")
     print_character_stats(character)
     events = switch_statements()
