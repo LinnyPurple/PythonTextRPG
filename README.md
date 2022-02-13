@@ -1,19 +1,14 @@
-# 1510-A3-Text-based-adventure-game
+# Python Text RPG
 
-Every program needs a README.md
+This text RPG was made for BCIT's COMP 1510 course.
 
-This is written in markdown. Read about markdown here: [markdowncheatsheet](https://www.markdownguide.org/cheat-sheet/)
+Some things you can do in this game:
+- Battle a variety of monsters and bosses
+- Buy items and sleep at the inn
+- Complete sidequests
 
-## Your name:
-George Rozitis
+All within a 25x25 grid! There are easter eggs hidden within, try to find them if you can!
 
-## Your student number:
-A01253802
-
-## Your GitHub account:
-LinnyPurple
-
-## Any important comments you'd like to make about your work:
 NOTE: This game requires that you have VLC downloaded on your computer.
 You may receive errors when running this for the first time. Just
 uninstall VLC, then re-install, and things should work.
