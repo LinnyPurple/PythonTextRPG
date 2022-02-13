@@ -1,6 +1,5 @@
 """
 Your name: George Rozitis
-Your student number: A01253802
 
 All of your code must go in this file.
 """
